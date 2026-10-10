@@ -1,0 +1,7 @@
+*.zip
+*.tfrecord
+*.pbtxt
+train/
+valid/
+test/
+.ipynb_checkpoints/
