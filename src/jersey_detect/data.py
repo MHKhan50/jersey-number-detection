@@ -26,7 +26,7 @@ class Sample:
 
 
 def _values(features: dict, key: str) -> list:
-    kind, values = features.get(key, ("empty", []))
+    _, values = features.get(key, ("empty", []))
     return values
 
 
