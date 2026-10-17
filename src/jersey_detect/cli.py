@@ -21,6 +21,8 @@ def main(argv: list[str] | None = None) -> int:
     train_p.add_argument("--batch-size", type=int)
     train_p.add_argument("--learning-rate", type=float)
     train_p.add_argument("--seed", type=int)
+    train_p.add_argument("--box-loss", choices=["mse", "l1", "giou"])
+    train_p.add_argument("--select-by", choices=["loss", "iou"])
 
     pred_p = sub.add_parser("predict", help="detect on one image and save an annotated copy")
     pred_p.add_argument("--checkpoint", required=True)
@@ -36,7 +38,7 @@ def main(argv: list[str] | None = None) -> int:
             with open(args.config, encoding="utf-8") as fh:
                 settings = json.load(fh)
         for key in ("train_record", "val_record", "out_dir", "epochs", "batch_size",
-                    "learning_rate", "seed"):
+                    "learning_rate", "seed", "box_loss", "select_by"):
             value = getattr(args, key.replace("-", "_"), None)
             if value is not None:
                 settings[key] = value
