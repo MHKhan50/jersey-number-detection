@@ -31,6 +31,7 @@ jersey-number-detection/
 ├── presentation/
 │   └── 2025_PlayerDetection_JerseyNumber_TensorFlow_Presentation_FINAL.pptx  # Presentation slides
 ├── .gitignore
+├── LICENSE                                  # MIT
 ├── README.md                                # Project documentation
 └── requirements.txt                         # Python dependencies
 ```
@@ -46,6 +47,12 @@ pip install -r requirements.txt
 
 ---
 
+## 📦 Dataset
+
+The dataset is a Roboflow export in TFRecord format. It is not included in this repository. Create your own download link on Roboflow Universe and set it as the `ROBOFLOW_URL` variable before running the notebook. Never commit API keys or download tokens.
+
+---
+
 ## 🚀 Usage
 1. Open Jupyter Notebook:
    ```bash
@@ -56,5 +63,9 @@ pip install -r requirements.txt
 
 ---
 
+## 📄 Licence
+
+Released under the [MIT Licence](LICENSE).
+
 ## 👨‍💻 Author
-**Muzammal Hussain**
+**Muzammal Hussain**, Software Engineer and Data Scientist
