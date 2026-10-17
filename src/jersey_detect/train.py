@@ -64,6 +64,10 @@ def giou_loss(pred: torch.Tensor, target: torch.Tensor, eps: float = 1e-7) -> to
     is in [0, 2].
     """
     py1, px1, py2, px2 = pred.unbind(-1)
+    # A sigmoid output can put min above max, giving zero area and no gradient through the
+    # clamps below. Re-ordering keeps the gradient flowing.
+    py1, py2 = torch.minimum(py1, py2), torch.maximum(py1, py2)
+    px1, px2 = torch.minimum(px1, px2), torch.maximum(px1, px2)
     ty1, tx1, ty2, tx2 = target.unbind(-1)
     inter_h = (torch.min(py2, ty2) - torch.max(py1, ty1)).clamp(min=0)
     inter_w = (torch.min(px2, tx2) - torch.max(px1, tx1)).clamp(min=0)
