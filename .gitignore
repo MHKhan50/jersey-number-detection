@@ -11,3 +11,6 @@ __pycache__/
 *.keras
 .DS_Store
 __MACOSX/
+*.egg-info/
+checkpoints/
+runs/
