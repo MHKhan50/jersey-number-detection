@@ -2,7 +2,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from jersey_detect.tfrecord import encode_example, write_record  # noqa: E402
+from jersey_detect.tfrecord import write_record  # noqa: E402
 from jersey_detect.train import TrainConfig, train  # noqa: E402
 from tests.test_data import _example  # noqa: E402
 
