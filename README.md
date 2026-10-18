@@ -42,6 +42,13 @@ Each example holds a JPEG (`image/encoded`) and bounding boxes
 (`image/object/bbox/{ymin,xmin,ymax,xmax}`, normalised to 0-1) with a class
 label. Images without a box are skipped.
 
+The YOLO-format `jersey-2` export is also supported. Pass the split directory
+(`jersey-2/train`, `jersey-2/valid` or `jersey-2/test`, each with `images/` and
+`labels/`). Its single class is `number`, so a labelled image means a jersey
+number is present. It is not restricted to the number 0. The presence metric
+therefore means "a number is present" on this export, and the two datasets
+should not be reported as the same task.
+
 ## Installation
 
 Python 3.10 or newer.
@@ -65,6 +72,22 @@ jersey-detect train \
 
 This writes `runs/baseline/best.pt`, `history.json` (per-epoch metrics) and
 `config.json` (the exact settings used). Set `--seed` to repeat a run.
+
+On the YOLO-format `jersey-2` export, pass the split directories instead:
+
+```bash
+jersey-detect train \
+  --config configs/default.json \
+  --train-record /data/jersey-2/train \
+  --val-record /data/jersey-2/valid \
+  --out-dir runs/jersey2
+
+jersey-detect evaluate --checkpoint runs/jersey2/best.pt --data /data/jersey-2/test
+```
+
+`evaluate` reports the same metrics as training (box MSE, class accuracy,
+mean IoU over labelled images) on any split, so validation and test numbers
+can be compared directly.
 
 ## Prediction
 
