@@ -22,14 +22,21 @@ have no label and are not scored.
 
 | Model | Split | Scored images | Mean IoU (positives) | Share with IoU ≥ 0.5 |
 |---|---|---|---|---|
-| Mean-box baseline | Validation | _to be confirmed_ | 0.027 | _not measured_ |
-| Custom CNN (from scratch) | Validation | _re-run pending_ | _re-run pending_ | _re-run pending_ |
+| Mean-box baseline | Validation | 263 | 0.027 | _not measured_ |
+| Mean-box baseline | Test | 130 | 0.016 | _not measured_ |
+| Custom CNN, from scratch (15 epochs) | Validation | 263 | 0.045 | _not measured_ |
+| Custom CNN, from scratch (15 epochs) | Test | 130 | 0.044 | _not measured_ |
 | YOLOv8n, fine-tuned 50 epochs (imgsz 640) | Validation | 263 | 0.593 | 70.3% |
 | YOLOv8n, fine-tuned 50 epochs (imgsz 640) | Test | 130 | 0.581 | 68.5% |
 
+The test split is the reported result. The validation split was used to select
+checkpoints, so its numbers are slightly optimistic.
+
 The YOLOv8n row is a pretrained detector fine-tuned on this data, so it is not
-the same architecture as the custom CNN. The custom CNN row will be re-run on
-the same split before any comparison is drawn.
+the same architecture as the custom CNN. The custom CNN is trained from scratch
+with the package in this repository. Class accuracy is not reported: every
+labelled image in this export is positive, so the metric is always 1.0 and says
+nothing about presence.
 
 ## Dataset
 
