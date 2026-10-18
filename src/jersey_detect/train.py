@@ -18,7 +18,7 @@ from torch.utils.data import DataLoader, Dataset
 
 from jersey_detect.data import Sample, load_samples
 from jersey_detect.metrics import binary_accuracy, mean_iou
-from jersey_detect.model import JerseyDetector
+from jersey_detect.model import JerseyDetector, order_box
 
 BOX_LOSSES = ("mse", "l1", "giou")
 SELECT_BY = ("loss", "iou")
@@ -100,7 +100,7 @@ def evaluate(model: nn.Module, loader: DataLoader, device: torch.device) -> dict
     for images, boxes, labs in loader:
         images, boxes, labs = images.to(device), boxes.to(device), labs.to(device)
         box_logits, cls_logits = model(images)
-        pred_box = torch.sigmoid(box_logits)
+        pred_box = order_box(torch.sigmoid(box_logits))
         box_sse += mse_fn(pred_box, boxes).item()
         cls_sum += bce_fn(cls_logits, labs).item()
         n += images.shape[0]

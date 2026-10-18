@@ -34,3 +34,17 @@ class JerseyDetector(nn.Module):
         """Return (box_logits, class_logits). Apply sigmoid to get values in [0, 1]."""
         h = self.features(x)
         return self.box_head(h), self.class_head(h).squeeze(-1)
+
+
+def order_box(box: torch.Tensor) -> torch.Tensor:
+    """Return boxes shaped (..., 4) as [ymin, xmin, ymax, xmax] with min <= max on each axis.
+
+    The sigmoid head can output min above max. Such a box has zero area, so its IoU is 0 even
+    when the box sits on the right object. GIoU training is invariant to this swap, so the
+    model is not pushed away from it. Ordering the output before scoring or drawing fixes that.
+    """
+    y1, x1, y2, x2 = box.unbind(-1)
+    return torch.stack(
+        [torch.minimum(y1, y2), torch.minimum(x1, x2), torch.maximum(y1, y2), torch.maximum(x1, x2)],
+        dim=-1,
+    )
