@@ -42,8 +42,19 @@ weakness of coordinate losses: IoU is scale invariant, and GIoU keeps a gradient
 when two boxes do not overlap (Rezatofighi et al., 2019). We use GIoU as one of
 the box losses in our ablation.
 
-[PENDING: add related work on jersey-number recognition and sports player
-detection, after a literature check.]
+Most prior work on jersey numbers treats the problem as digit reading, and
+assumes the player has already been localised. Vats et al. (2021) trained a
+ResNet-34 with whole-number and per-digit losses on 54,251 player images from
+NHL games, reporting 89.6% test accuracy. Balaji et al. (2023) added keyframe
+selection in front of a ResNet-18 and bidirectional LSTM, reaching 68.53% on the
+SoccerNet test set. Koshkina and Elder (2024) adapted scene-text recognition
+models to hockey and soccer and combined frame predictions into tracklet-level
+labels. Liu et al. (2022) used a detection transformer to find players in
+American football video and a separate CNN to read their numbers. These systems
+combine localisation and reading in one pipeline. We study the localisation
+stage on its own, with a public YOLO-format export and a fixed scoring rule,
+and we compare a from-scratch network with a pretrained detector on the same
+split.
 
 ## 3. Data
 
@@ -189,3 +200,7 @@ The YOLO run uses Ultralytics with `yolov8n.pt`, 50 epochs, `imgsz=640`, `batch=
 - Jocher, G., Chaurasia, A., & Qiu, J. (2023). *Ultralytics YOLO* (version 8). https://github.com/ultralytics/ultralytics
 - Redmon, J., Divvala, S., Girshick, R., & Farhadi, A. (2016). You only look once: Unified, real-time object detection. *CVPR*.
 - Rezatofighi, H., Tsoi, N., Gwak, J., Sadeghian, A., Reid, I., & Savarese, S. (2019). Generalized intersection over union. *CVPR*.
+- Vats, K., Fani, M., Clausi, D. A., & Zelek, J. (2021). Multi-task learning for jersey number recognition in ice hockey. In *Proceedings of the 4th International Workshop on Multimedia Content Analysis in Sports (MMSports '21)*, Virtual Event, China.
+- Balaji, B., Bright, J., Prakash, H., Chen, Y., Clausi, D. A., & Zelek, J. (2023). Jersey number recognition using keyframe identification from low-resolution broadcast videos. arXiv:2309.06285.
+- Koshkina, M., & Elder, J. H. (2024). A general framework for jersey number recognition in sports video. arXiv:2405.13896.
+- Liu, H., Aderon, C., Wagon, N., Bamba, A. L., Li, X., Liu, H., MacCall, S., & Gan, Y. (2022). Automated player identification and indexing using two-stage deep learning network. arXiv:2204.13809.
