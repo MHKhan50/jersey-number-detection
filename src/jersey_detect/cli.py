@@ -21,13 +21,26 @@ def main(argv: list[str] | None = None) -> int:
     train_p.add_argument("--batch-size", type=int)
     train_p.add_argument("--learning-rate", type=float)
     train_p.add_argument("--seed", type=int)
+    train_p.add_argument("--box-loss", choices=["mse", "l1", "giou"])
+    train_p.add_argument("--select-by", choices=["loss", "iou"])
 
     pred_p = sub.add_parser("predict", help="detect on one image and save an annotated copy")
     pred_p.add_argument("--checkpoint", required=True)
     pred_p.add_argument("--image", required=True)
     pred_p.add_argument("--out", required=True)
 
+    eval_p = sub.add_parser(
+        "evaluate", help="score a checkpoint on a TFRecord file or a YOLO split directory"
+    )
+    eval_p.add_argument("--checkpoint", required=True)
+    eval_p.add_argument("--data", required=True, help="TFRecord file or YOLO split directory")
+
     args = parser.parse_args(argv)
+    if args.command == "evaluate":
+        from jersey_detect.evaluate import evaluate_checkpoint
+
+        print(json.dumps(evaluate_checkpoint(args.checkpoint, args.data)))
+        return 0
     if args.command == "train":
         from jersey_detect.train import train
 
@@ -36,7 +49,7 @@ def main(argv: list[str] | None = None) -> int:
             with open(args.config, encoding="utf-8") as fh:
                 settings = json.load(fh)
         for key in ("train_record", "val_record", "out_dir", "epochs", "batch_size",
-                    "learning_rate", "seed"):
+                    "learning_rate", "seed", "box_loss", "select_by"):
             value = getattr(args, key.replace("-", "_"), None)
             if value is not None:
                 settings[key] = value

@@ -9,7 +9,7 @@ import torch
 from PIL import Image, ImageDraw
 
 from jersey_detect.data import IMAGE_SIZE
-from jersey_detect.model import JerseyDetector
+from jersey_detect.model import JerseyDetector, order_box
 
 
 def load_model(checkpoint: str, device: torch.device | None = None) -> JerseyDetector:
@@ -29,7 +29,7 @@ def predict_image(model: JerseyDetector, image: Image.Image) -> dict:
     arr = np.asarray(resized, dtype=np.float32) / 255.0
     tensor = torch.from_numpy(arr).permute(2, 0, 1).unsqueeze(0)
     box_logits, cls_logits = model(tensor)
-    ymin, xmin, ymax, xmax = torch.sigmoid(box_logits)[0].tolist()
+    ymin, xmin, ymax, xmax = order_box(torch.sigmoid(box_logits))[0].tolist()
     prob = torch.sigmoid(cls_logits)[0].item()
     return {
         "probability": prob,

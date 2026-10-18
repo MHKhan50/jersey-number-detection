@@ -1,0 +1,206 @@
+# Jersey-number presence and box detection: a from-scratch CNN versus a fine-tuned YOLOv8n
+
+Muzammal Hussain
+
+> Draft. Sections marked [PENDING] depend on runs that are not finished yet.
+
+## Abstract
+
+We study whether a small convolutional network trained from scratch can locate a
+jersey number in a sports image, and how it compares with a fine-tuned YOLOv8n
+detector on the same data. Both models are evaluated on a public Roboflow export
+(`jersey-2`, one class) with the same split and the same scoring rule. On the
+test split (130 labelled images), the fine-tuned YOLOv8n reaches a mean IoU of
+0.581, the scratch CNN reaches 0.044, and a fixed mean-box baseline reaches 0.016.
+The scratch CNN is only marginally better than the baseline, which we analyse in
+the ablation section. [PENDING: ablation results]
+
+## 1. Introduction
+
+Jersey-number recognition is usually framed as reading digits, but many
+practical systems first need to know where the number is. This paper treats the
+task as single-object localisation: given an image, predict one box around the
+annotated number. We ask two questions. First, how much of the signal does a
+small network trained from scratch recover? Second, how much does a
+pretrained detector gain from fine-tuning on a small dataset?
+
+Our contributions are:
+
+1. A reproducible evaluation protocol for single-box localisation on a YOLO-format
+   export, including how unlabelled images are handled.
+2. A comparison of a from-scratch CNN, a fine-tuned YOLOv8n, and a mean-box
+   baseline on identical splits.
+3. An ablation of the scratch CNN's box loss, training length and checkpoint
+   selection rule. [PENDING]
+
+## 2. Related work
+
+YOLO frames detection as a single regression problem over a grid (Redmon et al.,
+2016). YOLOv8 is a later family of anchor-free detectors maintained by Ultralytics
+(Jocher et al., 2023). For box regression, IoU-based losses address a known
+weakness of coordinate losses: IoU is scale invariant, and GIoU keeps a gradient
+when two boxes do not overlap (Rezatofighi et al., 2019). We use GIoU as one of
+the box losses in our ablation.
+
+Most prior work on jersey numbers treats the problem as digit reading, and
+assumes the player has already been localised. Vats et al. (2021) trained a
+ResNet-34 with whole-number and per-digit losses on 54,251 player images from
+NHL games, reporting 89.6% test accuracy. Balaji et al. (2023) added keyframe
+selection in front of a ResNet-18 and bidirectional LSTM, reaching 68.53% on the
+SoccerNet test set. Koshkina and Elder (2024) adapted scene-text recognition
+models to hockey and soccer and combined frame predictions into tracklet-level
+labels. Liu et al. (2022) used a detection transformer to find players in
+American football video and a separate CNN to read their numbers. These systems
+combine localisation and reading in one pipeline. We study the localisation
+stage on its own, with a public YOLO-format export and a fixed scoring rule,
+and we compare a from-scratch network with a pretrained detector on the same
+split.
+
+## 3. Data
+
+We use the Roboflow export `jersey-2` (workspace `muzammal-masmatixinnovations-co-uk`,
+project `jersey-qyuun-s5ab4`, version 1, licence Public Domain). It has one class,
+`number`, in YOLO format.
+
+| Split | Images | Labelled images (scored) |
+|---|---|---|
+| Train | 3,165 | [PENDING] |
+| Validation | 301 | 263 |
+| Test | 148 | 130 |
+
+Images without a label file, or with an empty label file, are not scored. Each
+image is resized to 128 × 128 for the CNN. YOLOv8n uses its own input size of 640.
+
+Every labelled image in this export is positive. Presence accuracy is therefore
+always 1.0 and is not reported. The task we measure is localisation.
+
+## 4. Methods
+
+### 4.1 Scratch CNN
+
+A small convolutional network with a box head (four sigmoid outputs) and a
+presence head. Training uses Adam with learning rate 1e-3 and batch size 8. The
+box loss is MSE by default, and BCE is used for presence. The checkpoint is the
+epoch with the lowest validation loss. The default run is 15 epochs.
+
+### 4.2 Fine-tuned YOLOv8n
+
+Ultralytics YOLOv8n initialised from COCO-pretrained weights and fine-tuned for
+50 epochs at image size 640, batch 16, seed 0. The checkpoint is chosen by
+Ultralytics' validation fitness.
+
+### 4.3 Mean-box baseline
+
+The average of all training boxes is used as the prediction for every image. It
+has no image input and sets a floor for localisation quality on this split.
+
+## 5. Evaluation protocol
+
+For each labelled image, the first annotated box is the ground truth, following
+the original notebook. For each model, the prediction is the highest-confidence
+box (YOLO) or the single predicted box (CNN, baseline). If a model predicts no
+box, the image scores IoU 0. Mean IoU is the mean over scored images. We also
+report the share of images with IoU ≥ 0.5.
+
+The test split is the reported result. Validation was used to choose checkpoints,
+so its numbers are optimistic and are given for reference only.
+
+## 6. Results
+
+Test split (130 scored images):
+
+| Model | Mean IoU | Share with IoU ≥ 0.5 |
+|---|---|---|
+| Mean-box baseline | 0.016 | [PENDING] |
+| Scratch CNN (15 epochs) | 0.044 | [PENDING] |
+| YOLOv8n (fine-tuned, 50 epochs) | 0.581 | 68.5% |
+
+Validation split (263 scored images), for reference:
+
+| Model | Mean IoU | Share with IoU ≥ 0.5 |
+|---|---|---|
+| Mean-box baseline | 0.027 | [PENDING] |
+| Scratch CNN (15 epochs) | 0.045 | [PENDING] |
+| YOLOv8n (fine-tuned, 50 epochs) | 0.593 | 70.3% |
+
+The fine-tuned detector is far ahead of both other models. The scratch CNN
+improves on the mean-box baseline by a small margin. Section 7 examines why.
+
+## 7. Ablation of the scratch CNN
+
+Four variants, all on the same split, reported on the test split:
+
+- A. Default: MSE box loss, 15 epochs, checkpoint by validation loss.
+- B. Longer training: 50 epochs, otherwise as A.
+- C. GIoU box loss, otherwise as A.
+- D. GIoU box loss, checkpoint by validation IoU, 50 epochs.
+
+| Variant | Box loss | Epochs | Checkpoint | Box MSE (test) | Mean IoU (test) |
+|---|---|---|---|---|---|
+| A. Default | MSE | 15 | validation loss | 0.031 | 0.044 |
+| B. Longer training | MSE | 50 | validation loss | 0.034 | 0.039 |
+| C. GIoU box loss | GIoU | 15 | validation loss | 0.170 | 0.000 |
+| D. GIoU, IoU selection | GIoU | 50 | validation IoU | 0.280 | 0.000 |
+
+Longer training does not help. Variant B ends slightly below A on the test
+split, and its validation IoU levels off at about 0.04 to 0.05 after roughly
+epoch 20.
+
+Both GIoU variants fail. Their mean IoU is 0.0 on the test split, which means
+no predicted box overlaps the ground truth on any scored image. The per-epoch
+logs show the same pattern: validation IoU is 0.0 at every epoch of variant D,
+so the IoU-based checkpoint rule keeps the first epoch by tie-breaking. The
+cause is not yet established. The most likely candidate is that the sigmoid
+head outputs boxes with ymin above ymax. The GIoU loss re-orders such boxes
+before scoring, so training does not penalise them, but the IoU used for
+evaluation and checkpoint selection treats them as zero-area. A fix that orders
+predicted boxes before scoring and drawing is in the code (commit `f9dd9f4`).
+The ablation numbers above were produced before this fix. The fix has not yet
+been validated by retraining or by re-scoring the saved checkpoints, so the
+GIoU result is reported as a negative result with an open diagnosis.
+
+The ablation does not explain the small margin of the default CNN over the
+mean-box baseline. Changing the loss or training length does not move the
+scratch CNN beyond the baseline range, which suggests the limit comes from the
+architecture, the input resolution (128 × 128), or the amount of data. We
+report the GIoU variants as negative results. [PENDING: diagnosis of the GIoU
+collapse; seeds for variant A.]
+
+## 8. Limitations
+
+- One class, one box per image. Other players and other numbers are ignored.
+- The presence metric is trivial on this export, so the paper reports localisation only.
+- The test split has 130 scored images. Differences of a few points are within the
+  noise of a split this size. [PENDING: seeds and confidence intervals]
+- Checkpoints were selected on the validation split, which the test numbers do not
+  use, but the validation numbers are slightly optimistic.
+- The CNN and YOLO models use different input sizes (128 and 640) and different
+  pretraining, so the comparison is between systems, not architectures.
+
+## 9. Reproducibility
+
+Code: `https://github.com/MHKhan50/jersey-number-detection` (branch `box-loss-giou`).
+
+```bash
+jersey-detect train --config configs/default.json \
+  --train-record /data/jersey-2/train --val-record /data/jersey-2/valid \
+  --out-dir runs/cnn
+jersey-detect evaluate --checkpoint runs/cnn/best.pt --data /data/jersey-2/test
+```
+
+The YOLO run uses Ultralytics with `yolov8n.pt`, 50 epochs, `imgsz=640`, `batch=16`,
+`seed=0`. The mean-box baseline and the scoring rule are in `mean_iou_eval.py`.
+
+## 10. AI-use disclosure
+
+[PENDING: check the target venue's policy before submission.]
+
+## References
+
+- Jocher, G., Chaurasia, A., & Qiu, J. (2023). *Ultralytics YOLO* (version 8). https://github.com/ultralytics/ultralytics
+- Redmon, J., Divvala, S., Girshick, R., & Farhadi, A. (2016). You only look once: Unified, real-time object detection. *CVPR*.
+- Rezatofighi, H., Tsoi, N., Gwak, J., Sadeghian, A., Reid, I., & Savarese, S. (2019). Generalized intersection over union. *CVPR*.
+- Vats, K., Fani, M., Clausi, D. A., & Zelek, J. (2021). Multi-task learning for jersey number recognition in ice hockey. In *Proceedings of the 4th International Workshop on Multimedia Content Analysis in Sports (MMSports '21)*, Virtual Event, China.
+- Balaji, B., Bright, J., Prakash, H., Chen, Y., Clausi, D. A., & Zelek, J. (2023). Jersey number recognition using keyframe identification from low-resolution broadcast videos. arXiv:2309.06285.
+- Koshkina, M., & Elder, J. H. (2024). A general framework for jersey number recognition in sports video. arXiv:2405.13896.
+- Liu, H., Aderon, C., Wagon, N., Bamba, A. L., Li, X., Liu, H., MacCall, S., & Gan, Y. (2022). Automated player identification and indexing using two-stage deep learning network. arXiv:2204.13809.

@@ -12,12 +12,31 @@ single-object detector: one bounding box and one presence probability per image.
 
 ## Results
 
-Results will be added once the training runs in [Reproducing](#reproducing)
-have been completed on the official splits. No figures are reported yet.
+Evaluation uses the first annotated box per image. Images without a ground-truth
+box are not scored. Mean IoU is taken over scored images, and an image where the
+model predicts no box counts as IoU 0.
 
-| Split | Box MSE | Class accuracy | Mean IoU (positives) |
-|---|---|---|---|
-| Validation | _to be filled_ | _to be filled_ | _to be filled_ |
+Data: Roboflow `jersey-2` export (single class `number`, YOLO format), with
+3,165 train, 301 validation and 148 test images. Some validation and test images
+have no label and are not scored.
+
+| Model | Split | Scored images | Mean IoU (positives) | Share with IoU ≥ 0.5 |
+|---|---|---|---|---|
+| Mean-box baseline | Validation | 263 | 0.027 | _not measured_ |
+| Mean-box baseline | Test | 130 | 0.016 | _not measured_ |
+| Custom CNN, from scratch (15 epochs) | Validation | 263 | 0.045 | _not measured_ |
+| Custom CNN, from scratch (15 epochs) | Test | 130 | 0.044 | _not measured_ |
+| YOLOv8n, fine-tuned 50 epochs (imgsz 640) | Validation | 263 | 0.593 | 70.3% |
+| YOLOv8n, fine-tuned 50 epochs (imgsz 640) | Test | 130 | 0.581 | 68.5% |
+
+The test split is the reported result. The validation split was used to select
+checkpoints, so its numbers are slightly optimistic.
+
+The YOLOv8n row is a pretrained detector fine-tuned on this data, so it is not
+the same architecture as the custom CNN. The custom CNN is trained from scratch
+with the package in this repository. Class accuracy is not reported: every
+labelled image in this export is positive, so the metric is always 1.0 and says
+nothing about presence.
 
 ## Dataset
 
@@ -29,6 +48,13 @@ download tokens.
 Each example holds a JPEG (`image/encoded`) and bounding boxes
 (`image/object/bbox/{ymin,xmin,ymax,xmax}`, normalised to 0-1) with a class
 label. Images without a box are skipped.
+
+The YOLO-format `jersey-2` export is also supported. Pass the split directory
+(`jersey-2/train`, `jersey-2/valid` or `jersey-2/test`, each with `images/` and
+`labels/`). Its single class is `number`, so a labelled image means a jersey
+number is present. It is not restricted to the number 0. The presence metric
+therefore means "a number is present" on this export, and the two datasets
+should not be reported as the same task.
 
 ## Installation
 
@@ -53,6 +79,22 @@ jersey-detect train \
 
 This writes `runs/baseline/best.pt`, `history.json` (per-epoch metrics) and
 `config.json` (the exact settings used). Set `--seed` to repeat a run.
+
+On the YOLO-format `jersey-2` export, pass the split directories instead:
+
+```bash
+jersey-detect train \
+  --config configs/default.json \
+  --train-record /data/jersey-2/train \
+  --val-record /data/jersey-2/valid \
+  --out-dir runs/jersey2
+
+jersey-detect evaluate --checkpoint runs/jersey2/best.pt --data /data/jersey-2/test
+```
+
+`evaluate` reports the same metrics as training (box MSE, class accuracy,
+mean IoU over labelled images) on any split, so validation and test numbers
+can be compared directly.
 
 ## Prediction
 
@@ -122,4 +164,4 @@ Released under the [MIT Licence](LICENSE).
 
 ## Author
 
-**Muzammal Hussain**, Software Engineer and Data Scientist
+**Muzammal Hussain**, Software Engineer, Data Scientist and AI Researcher
