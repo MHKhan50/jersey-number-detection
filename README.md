@@ -164,4 +164,4 @@ Released under the [MIT Licence](LICENSE).
 
 ## Author
 
-**Muzammal Hussain**, Software Engineer and Data Scientist
+**Muzammal Hussain**, Software Engineer, Data Scientist and AI Researcher
