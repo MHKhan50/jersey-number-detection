@@ -115,7 +115,7 @@ Validation split (263 scored images), for reference:
 The fine-tuned detector is far ahead of both other models. The scratch CNN
 improves on the mean-box baseline by a small margin. Section 7 examines why.
 
-## 7. Ablation of the scratch CNN [PENDING]
+## 7. Ablation of the scratch CNN
 
 Four variants, all on the same split, reported on the test split:
 
@@ -124,7 +124,32 @@ Four variants, all on the same split, reported on the test split:
 - C. GIoU box loss, otherwise as A.
 - D. GIoU box loss, checkpoint by validation IoU, 50 epochs.
 
-[PENDING: fill in after the runs.]
+| Variant | Box loss | Epochs | Checkpoint | Box MSE (test) | Mean IoU (test) |
+|---|---|---|---|---|---|
+| A. Default | MSE | 15 | validation loss | 0.031 | 0.044 |
+| B. Longer training | MSE | 50 | validation loss | 0.034 | 0.039 |
+| C. GIoU box loss | GIoU | 15 | validation loss | 0.170 | 0.000 |
+| D. GIoU, IoU selection | GIoU | 50 | validation IoU | 0.280 | 0.000 |
+
+Longer training does not help. Variant B ends slightly below A on the test
+split, and its validation IoU levels off at about 0.04 to 0.05 after roughly
+epoch 20.
+
+Both GIoU variants fail. Their mean IoU is 0.0 on the test split, which means
+no predicted box overlaps the ground truth on any scored image. The per-epoch
+logs show the same pattern: validation IoU is 0.0 at every epoch of variant D,
+so the IoU-based checkpoint rule keeps the first epoch by tie-breaking. The
+cause is not yet established. Likely candidates are predicted boxes with
+inverted coordinates (ymin greater than ymax) or zero area, which would make
+the GIoU gradient uninformative. This needs to be checked on the saved
+checkpoints before the GIoU result is interpreted further.
+
+The ablation does not explain the small margin of the default CNN over the
+mean-box baseline. Changing the loss or training length does not move the
+scratch CNN beyond the baseline range, which suggests the limit comes from the
+architecture, the input resolution (128 × 128), or the amount of data. We
+report the GIoU variants as negative results. [PENDING: diagnosis of the GIoU
+collapse; seeds for variant A.]
 
 ## 8. Limitations
 
