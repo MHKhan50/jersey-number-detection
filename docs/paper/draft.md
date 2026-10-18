@@ -139,10 +139,14 @@ Both GIoU variants fail. Their mean IoU is 0.0 on the test split, which means
 no predicted box overlaps the ground truth on any scored image. The per-epoch
 logs show the same pattern: validation IoU is 0.0 at every epoch of variant D,
 so the IoU-based checkpoint rule keeps the first epoch by tie-breaking. The
-cause is not yet established. Likely candidates are predicted boxes with
-inverted coordinates (ymin greater than ymax) or zero area, which would make
-the GIoU gradient uninformative. This needs to be checked on the saved
-checkpoints before the GIoU result is interpreted further.
+cause is not yet established. The most likely candidate is that the sigmoid
+head outputs boxes with ymin above ymax. The GIoU loss re-orders such boxes
+before scoring, so training does not penalise them, but the IoU used for
+evaluation and checkpoint selection treats them as zero-area. A fix that orders
+predicted boxes before scoring and drawing is in the code (commit `f9dd9f4`).
+The ablation numbers above were produced before this fix. The fix has not yet
+been validated by retraining or by re-scoring the saved checkpoints, so the
+GIoU result is reported as a negative result with an open diagnosis.
 
 The ablation does not explain the small margin of the default CNN over the
 mean-box baseline. Changing the loss or training length does not move the
