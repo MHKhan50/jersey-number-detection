@@ -12,12 +12,24 @@ single-object detector: one bounding box and one presence probability per image.
 
 ## Results
 
-Results will be added once the training runs in [Reproducing](#reproducing)
-have been completed on the official splits. No figures are reported yet.
+Evaluation uses the first annotated box per image. Images without a ground-truth
+box are not scored. Mean IoU is taken over scored images, and an image where the
+model predicts no box counts as IoU 0.
 
-| Split | Box MSE | Class accuracy | Mean IoU (positives) |
-|---|---|---|---|
-| Validation | _to be filled_ | _to be filled_ | _to be filled_ |
+Data: Roboflow `jersey-2` export (single class `number`, YOLO format), with
+3,165 train, 301 validation and 148 test images. Some validation and test images
+have no label and are not scored.
+
+| Model | Split | Scored images | Mean IoU (positives) | Share with IoU ≥ 0.5 |
+|---|---|---|---|---|
+| Mean-box baseline | Validation | _to be confirmed_ | 0.027 | _not measured_ |
+| Custom CNN (from scratch) | Validation | _re-run pending_ | _re-run pending_ | _re-run pending_ |
+| YOLOv8n, fine-tuned 50 epochs (imgsz 640) | Validation | 263 | 0.593 | 70.3% |
+| YOLOv8n, fine-tuned 50 epochs (imgsz 640) | Test | 130 | 0.581 | 68.5% |
+
+The YOLOv8n row is a pretrained detector fine-tuned on this data, so it is not
+the same architecture as the custom CNN. The custom CNN row will be re-run on
+the same split before any comparison is drawn.
 
 ## Dataset
 
