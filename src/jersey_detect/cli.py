@@ -29,7 +29,18 @@ def main(argv: list[str] | None = None) -> int:
     pred_p.add_argument("--image", required=True)
     pred_p.add_argument("--out", required=True)
 
+    eval_p = sub.add_parser(
+        "evaluate", help="score a checkpoint on a TFRecord file or a YOLO split directory"
+    )
+    eval_p.add_argument("--checkpoint", required=True)
+    eval_p.add_argument("--data", required=True, help="TFRecord file or YOLO split directory")
+
     args = parser.parse_args(argv)
+    if args.command == "evaluate":
+        from jersey_detect.evaluate import evaluate_checkpoint
+
+        print(json.dumps(evaluate_checkpoint(args.checkpoint, args.data)))
+        return 0
     if args.command == "train":
         from jersey_detect.train import train
 

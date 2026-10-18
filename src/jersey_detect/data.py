@@ -8,6 +8,7 @@ to 0-1), and images without any box are skipped.
 from __future__ import annotations
 
 import io
+import os
 from dataclasses import dataclass
 
 import numpy as np
@@ -54,8 +55,52 @@ def parse_example(payload: bytes) -> Sample | None:
     return Sample(image=arr, box=box, label=label)
 
 
+_IMAGE_SUFFIXES = (".jpg", ".jpeg", ".png", ".bmp")
+
+
+def _load_yolo_sample(image_path: str, label_path: str) -> Sample | None:
+    """Build one sample from a YOLO image and its label file (class cx cy w h, normalised)."""
+    with open(label_path, encoding="utf-8") as fh:
+        rows = [line.split() for line in fh if line.strip()]
+    if not rows:
+        return None  # no box, skipped as in the TFRecord path
+
+    cx, cy, w, h = (float(v) for v in rows[0][1:5])  # first box, as in the original notebook
+    box = np.array(
+        [cy - h / 2, cx - w / 2, cy + h / 2, cx + w / 2], dtype=np.float32
+    )  # [ymin, xmin, ymax, xmax]
+
+    image = Image.open(image_path).convert("RGB")
+    image = image.resize((IMAGE_SIZE, IMAGE_SIZE), Image.BILINEAR)
+    arr = np.asarray(image, dtype=np.float32) / 255.0
+    # The YOLO export has one class ('number'), so a labelled box means a number is present.
+    return Sample(image=arr, box=box, label=1.0)
+
+
+def load_yolo_samples(split_dir: str) -> list[Sample]:
+    """Load a YOLO-format split laid out as <split_dir>/images and <split_dir>/labels."""
+    images_dir = os.path.join(split_dir, "images")
+    labels_dir = os.path.join(split_dir, "labels")
+    samples = []
+    for name in sorted(os.listdir(images_dir)):
+        stem, ext = os.path.splitext(name)
+        if ext.lower() not in _IMAGE_SUFFIXES:
+            continue
+        label_path = os.path.join(labels_dir, stem + ".txt")
+        if not os.path.exists(label_path):
+            continue  # unlabelled image: skipped, the same as an example without a box
+        sample = _load_yolo_sample(os.path.join(images_dir, name), label_path)
+        if sample is not None:
+            samples.append(sample)
+    if not samples:
+        raise ValueError(f"No usable YOLO examples found in {split_dir}")
+    return samples
+
+
 def load_samples(path: str) -> list[Sample]:
-    """Load every usable example from a TFRecord file into memory."""
+    """Load every usable example from a TFRecord file, or a YOLO split directory."""
+    if os.path.isdir(path):
+        return load_yolo_samples(path)
     samples = []
     for payload in iter_records(path):
         sample = parse_example(payload)
