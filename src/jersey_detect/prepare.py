@@ -93,6 +93,7 @@ def locate_or_download(search_roots: list[str], download_dir: str) -> Path:
         return found
     key = roboflow_api_key()
     if not key:
+        print("No ROBOFLOW_API_KEY found (environment variable or attached Kaggle secret).")
         raise FileNotFoundError(
             "Dataset not found. Attach it as a Kaggle input (folder with train/valid/test) "
             "or add a ROBOFLOW_API_KEY secret."
@@ -100,7 +101,8 @@ def locate_or_download(search_roots: list[str], download_dir: str) -> Path:
     try:
         return download_roboflow(download_dir, key)
     except Exception as exc:  # noqa: BLE001 - fall back to the official SDK
-        print(f"Roboflow REST download failed ({type(exc).__name__}); trying the roboflow package")
+        reason = str(exc).replace(key, "***")
+        print(f"Roboflow REST download failed ({type(exc).__name__}: {reason}); trying the SDK")
     return _download_with_sdk(download_dir, key)
 
 
