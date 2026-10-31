@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Jersey Number Localisation: a from-scratch anchor-free detector and evaluation protocol"
+type: software
+authors:
+  - family-names: Hussain
+    given-names: Muzammal
+version: 2.0.0
+date-released: 2026-10-31
+license: MIT
+repository-code: "https://github.com/MHKhan50/jersey-number-detection"
+keywords:
+  - jersey number
+  - object detection
+  - sports analytics
+  - CenterNet
+  - training from scratch

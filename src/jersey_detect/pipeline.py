@@ -217,11 +217,12 @@ def run_pipeline(cfg: PipelineConfig) -> dict:
         stage("legacy_regressor", legacy_stage)
 
     budget_s = cfg.time_budget_hours * 3600
-    reserve_s = 0.15 * 3600  # final evaluation and writing results
+    reserve_s = min(0.15 * 3600, 0.1 * budget_s)  # final evaluation and writing results
+    min_run_s = min(0.2 * 3600, 0.1 * budget_s)  # not worth starting a run with less than this
     test_by_seed = {}
     for i, seed in enumerate(cfg.seeds):
         remaining = budget_s - (time.time() - started) - reserve_s
-        if remaining < 0.2 * 3600:
+        if remaining < min_run_s:
             log(f"skipping seed {seed}: {remaining / 3600:.2f} h left in the budget")
             summary["stages"][f"jersey_net_seed{seed}"] = {"status": "skipped_time_budget"}
             save()

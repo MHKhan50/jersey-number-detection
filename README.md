@@ -80,7 +80,7 @@ and does not store it.
 | Input | 512×512 letterbox; training adds random scale (0.6–1.3), placement and colour jitter. No horizontal flip, which would mirror the digits |
 | Training | AdamW, lr 1e-3 with warm-up and cosine decay, weight decay 1e-4, batch 32, mixed precision on GPU, 140 epochs |
 
-About 3.5 million parameters, all trained from scratch. Settings are in
+About 4.7 million parameters, all trained from scratch. Settings are in
 [`configs/jersey_net.json`](configs/jersey_net.json) and [`configs/kaggle.json`](configs/kaggle.json).
 
 ## Installation
