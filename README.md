@@ -34,8 +34,20 @@ images only) and are kept for reference.
 
 ## Dataset
 
-Roboflow export `jersey-2` (one class, `number`, YOLO format, public domain), with 3,165 train,
-301 validation and 148 test images. It is not included in this repository. Download it from
+Roboflow export `jersey-2` (one class, `number`, YOLO format, public domain). All images are
+128×128 pixels.
+
+| Split | Images | Labelled images | Boxes | Max boxes per image |
+|---|---|---|---|---|
+| Train | 3,165 | 2,784 | 4,941 | 9 |
+| Validation | 301 | 263 | 485 | 6 |
+| Test | 147 | 130 | 234 | 9 |
+
+The median box side is about 8% of the image (about 10 pixels), and one in ten is under 3%.
+Duplicate check (difference hash, distance ≤ 4): 9 validation images and 1 test image have a
+near-identical training image; no Roboflow source names are shared across splits.
+
+The dataset It is not included in this repository. Download it from
 Roboflow in **YOLOv8** format; the expected layout is:
 
 ```
@@ -77,8 +89,8 @@ and does not store it.
 | Neck | Top-down feature pyramid fused back to stride 4 (jersey numbers are small) |
 | Heads | Centre heatmap (penalty-reduced focal loss), width/height and offset (L1) |
 | Decoding | 3×3 max-pool peak picking, top 100; no anchors and no NMS |
-| Input | 512×512 letterbox; training adds random scale (0.6–1.3), placement and colour jitter. No horizontal flip, which would mirror the digits |
-| Training | AdamW, lr 1e-3 with warm-up and cosine decay, weight decay 1e-4, batch 32, mixed precision on GPU, 140 epochs |
+| Input | 256×256 letterbox (the 128×128 source images are upsampled 2× so the smallest numbers still cover two cells of the stride-4 output); training adds random scale (0.6–1.3), placement and colour jitter. No horizontal flip, which would mirror the digits |
+| Training | AdamW, lr 1e-3 with warm-up and cosine decay, weight decay 1e-4, batch 64, mixed precision on GPU, 140 epochs |
 
 About 4.7 million parameters, all trained from scratch. Settings are in
 [`configs/jersey_net.json`](configs/jersey_net.json) and [`configs/kaggle.json`](configs/kaggle.json).
@@ -155,7 +167,7 @@ tests/            pytest suite
 
 ## Limitations
 
-* One dataset with a small test split (148 images). Intervals are wide and are reported.
+* One dataset with a small test split (147 images). Intervals are wide and are reported.
 * Frames from the same match can appear in different splits of a Roboflow export. The duplicate
   check measures this; it does not remove it.
 * Localisation only. The digits are not read.

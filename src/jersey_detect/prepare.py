@@ -23,6 +23,18 @@ DEFAULT_PROJECT = "jersey-qyuun-s5ab4"
 DEFAULT_VERSION = 1
 
 
+def _skip(path: Path) -> bool:
+    """Folders that zip tools on macOS add, and hidden folders."""
+    return path.name.startswith((".", "__MACOSX"))
+
+
+def _has_images(folder: Path) -> bool:
+    from jersey_detect.data import IMAGE_SUFFIXES
+
+    return any(p.suffix.lower() in IMAGE_SUFFIXES and not p.name.startswith("._")
+               for p in folder.iterdir())
+
+
 def find_dataset(roots: list[str | os.PathLike], max_depth: int = 5) -> Path | None:
     """Return the first directory under ``roots`` that has all three splits."""
     for root in roots:
@@ -34,13 +46,14 @@ def find_dataset(roots: list[str | os.PathLike], max_depth: int = 5) -> Path | N
             next_level = []
             for c in candidates:
                 try:
-                    find_split_dirs(c)
-                    return c
+                    splits = find_split_dirs(c)
+                    if _has_images(splits["train"] / "images"):
+                        return c
                 except FileNotFoundError:
                     pass
                 if depth < max_depth - 1:
                     try:
-                        next_level += sorted(p for p in c.iterdir() if p.is_dir())
+                        next_level += sorted(p for p in c.iterdir() if p.is_dir() and not _skip(p))
                     except OSError:
                         continue
             candidates = next_level

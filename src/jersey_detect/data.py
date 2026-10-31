@@ -65,8 +65,8 @@ def load_split(split_dir: str | os.PathLike) -> list[ImageRecord]:
         raise FileNotFoundError(f"No images/ folder in {split_dir}")
     records = []
     for img in sorted(images_dir.iterdir()):
-        if img.suffix.lower() not in IMAGE_SUFFIXES:
-            continue
+        if img.suffix.lower() not in IMAGE_SUFFIXES or img.name.startswith("._"):
+            continue  # "._name.jpg" files are macOS metadata, not images
         label = labels_dir / f"{img.stem}.txt"
         if label.exists():
             records.append(ImageRecord(str(img), _read_label_file(label), True))

@@ -78,3 +78,13 @@ def test_find_dataset_searches_nested_folders(tmp_path):
         _split(root / name, {"x": "0 0.5 0.5 0.1 0.1\n"})
     assert find_dataset([tmp_path / "input"]) == root
     assert find_dataset([tmp_path / "missing"]) is None
+
+
+def test_find_dataset_ignores_macos_zip_folders(tmp_path):
+    from jersey_detect.prepare import find_dataset
+
+    for name in ("train", "valid", "test"):
+        (tmp_path / "__MACOSX" / "jersey-2" / name / "images").mkdir(parents=True)
+        (tmp_path / "__MACOSX" / "jersey-2" / name / "images" / "._a.jpg").write_bytes(b"x")
+        _split(tmp_path / "jersey-2" / name, {"a": "0 0.5 0.5 0.1 0.1\n"})
+    assert find_dataset([tmp_path]) == tmp_path / "jersey-2"

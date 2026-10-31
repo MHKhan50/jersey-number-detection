@@ -64,15 +64,19 @@ pipelines either assume or obtain from pose estimation.
 We use the Roboflow export `jersey-2` (workspace `muzammal-masmatixinnovations-co-uk`, project
 `jersey-qyuun-s5ab4`, version 1, licence Public Domain), one class (`number`), YOLO format.
 
-| Split | Images | Labelled images | Boxes |
-|---|---|---|---|
-| Train | 3,165 | [PENDING] | [PENDING] |
-| Validation | 301 | 263 | [PENDING] |
-| Test | 148 | 130 | [PENDING] |
+| Split | Images | Labelled images | Boxes | Max boxes per image |
+|---|---|---|---|---|
+| Train | 3,165 | 2,784 | 4,941 | 9 |
+| Validation | 301 | 263 | 485 | 6 |
+| Test | 147 | 130 | 234 | 9 |
+
+All images are 128 × 128 pixels. The median box side is about 8% of the image side (about 10
+pixels), and the 10th percentile is about 3% (4 pixels).
 
 Images without a label, or with an empty label file, are kept and act as negatives.
-Cross-split duplicates (same Roboflow source name, or a difference-hash distance of at most 4
-bits): [PENDING: counts from `leakage.json`]. The official splits are used unchanged.
+Cross-split duplicates: no Roboflow source name is shared between splits; with a 64-bit
+difference hash and a Hamming distance of at most 4, 9 validation images and 1 test image have a
+near-identical training image. The official splits are used unchanged.
 
 ## 4. Methods
 
@@ -97,11 +101,12 @@ MSE on the first box, 15 epochs, weights after the last epoch.
 * Loss: penalty-reduced focal loss on the heatmap (α = 2, β = 4) with Gaussian targets whose
   radius follows CenterNet, plus L1 on size (weight 0.1) and offset (weight 1) at object centres.
 * Decoding: 3×3 max-pool peak selection, the top 100 peaks, no NMS.
-* Input and augmentation: 512×512 letterbox, random scale in [0.6, 1.3], random placement,
+* Input and augmentation: 256×256 letterbox (the 128×128 images upsampled 2×, so the smallest
+  numbers still span two cells of the stride-4 output), random scale in [0.6, 1.3], random placement,
   brightness, contrast and saturation jitter (±30%). No horizontal flip, which would mirror the
   digits.
 * Optimisation: AdamW, learning rate 1e-3, weight decay 1e-4 (not on norms and biases), three
-  warm-up epochs then cosine decay to 1% over 140 epochs, batch 32, gradient clipping at 10,
+  warm-up epochs then cosine decay to 1% over 140 epochs, batch 64, gradient clipping at 10,
   mixed precision. Validation every five epochs; the checkpoint with the best validation
   AP50:95 is kept. About 4.7 million parameters, all randomly initialised.
 
@@ -148,15 +153,15 @@ Ablation of the v1 regressor, test split, run before the box-ordering fix:
 
 Longer training does not help, and neither loss moves the regressor beyond the baseline range.
 The design is the likely limit: global average pooling discards where features occur, the model
-can output only one box when images can contain several numbers, and the 128×128 stretched input
+can output only one box when images can contain several numbers, and the training images hold up to nine numbers each,
 leaves small numbers a few pixels wide. JerseyNet addresses each of these (spatial heatmap, many
-outputs, stride-4 features on a 512 letterbox). The GIoU collapse is reported as a negative
+outputs, stride-4 features on a 2× upsampled input). The GIoU collapse is reported as a negative
 result with an open diagnosis; the v1 code is preserved in the version 1.0.0 archive.
 [PENDING: confirm with the v2 results.]
 
 ## 8. Limitations
 
-* One dataset with 148 test images; intervals are wide.
+* One dataset with 147 test images; intervals are wide.
 * Frames from one match may sit in different splits; we measure but do not remove this.
 * Localisation only; the digits are not read.
 * JerseyNet and YOLOv8n differ in input size and pretraining, so that comparison is between
