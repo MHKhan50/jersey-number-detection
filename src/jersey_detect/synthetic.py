@@ -2,7 +2,8 @@
 
 Each image is a noisy background with one to three "shirts", each carrying a printed number.
 The labelled box is the number, as in the real export. Some images have no number, some have
-no label file at all (kind 0: empty label file, kind 5: no file), so every code path of the loader and the evaluator is exercised.
+no label file at all (kind 0: empty label file, kind 5: no file), so every code path of the
+loader and the evaluator is exercised.
 """
 
 from __future__ import annotations

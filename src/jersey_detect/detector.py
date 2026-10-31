@@ -110,10 +110,11 @@ def detection_loss(out: dict, batch: dict, wh_weight: float = 0.1) -> dict[str, 
     hm = focal_loss(out["heatmap"], batch["heatmap"])
     mask = batch["mask"].unsqueeze(-1)
     n = mask.sum().clamp(min=1)
-    wh = (F.l1_loss(_gather(out["wh"].float(), batch["index"]), batch["wh"], reduction="none") * mask).sum() / n
-    off = (
-        F.l1_loss(_gather(out["offset"].float(), batch["index"]), batch["offset"], reduction="none") * mask
-    ).sum() / n
+    def masked_l1(name: str) -> torch.Tensor:
+        pred = _gather(out[name].float(), batch["index"])
+        return (F.l1_loss(pred, batch[name], reduction="none") * mask).sum() / n
+
+    wh, off = masked_l1("wh"), masked_l1("offset")
     total = hm + wh_weight * wh + off
     return {"loss": total, "heatmap": hm.detach(), "wh": wh.detach(), "offset": off.detach()}
 
