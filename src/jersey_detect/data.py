@@ -1,111 +1,119 @@
-"""Dataset parsing: TFRecord examples to (image, box, label) samples.
+"""Read YOLO-format splits (Roboflow "YOLOv8" export).
 
-Matches the original notebook: the image is resized to 128x128, the first
-bounding box is kept (boxes are stored as [ymin, xmin, ymax, xmax], normalised
-to 0-1), and images without any box are skipped.
+Layout::
+
+    <root>/train/images/*.jpg   <root>/train/labels/*.txt
+    <root>/valid/images/...     <root>/valid/labels/...   (``val`` is accepted too)
+    <root>/test/images/...      <root>/test/labels/...
+
+Each label line is ``class cx cy w h`` normalised to 0-1. An image with no label file, or an
+empty one, has no jersey number in it. Such images are kept: they count as negatives in the
+COCO-style evaluation, where any box predicted on them is a false positive.
 """
 
 from __future__ import annotations
 
-import io
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from pathlib import Path
 
 import numpy as np
-from PIL import Image
 
-from jersey_detect.tfrecord import decode_example, iter_records
+from jersey_detect.boxes import clip01, yolo_to_xyxy
 
-IMAGE_SIZE = 128
-
-
-@dataclass(frozen=True)
-class Sample:
-    image: np.ndarray  # float32, shape (128, 128, 3), values in [0, 1]
-    box: np.ndarray  # float32, shape (4,), [ymin, xmin, ymax, xmax] in [0, 1]
-    label: float  # 1.0 when the labelled object (jersey number '0') is present
+IMAGE_SUFFIXES = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
+SPLIT_NAMES = {"train": ("train",), "val": ("valid", "val"), "test": ("test",)}
 
 
-def _values(features: dict, key: str) -> list:
-    _, values = features.get(key, ("empty", []))
-    return values
+@dataclass
+class ImageRecord:
+    path: str
+    boxes: np.ndarray = field(default_factory=lambda: np.zeros((0, 4), dtype=np.float32))
+    has_label_file: bool = False
+
+    @property
+    def stem(self) -> str:
+        return Path(self.path).stem
+
+    @property
+    def labelled(self) -> bool:
+        return len(self.boxes) > 0
 
 
-def parse_example(payload: bytes) -> Sample | None:
-    """Parse one serialized example. Returns None when the example has no box."""
-    features = decode_example(payload)
-    encoded = _values(features, "image/encoded")
-    if not encoded:
-        raise ValueError("Example has no image/encoded feature")
-
-    xmin = _values(features, "image/object/bbox/xmin")
-    xmax = _values(features, "image/object/bbox/xmax")
-    ymin = _values(features, "image/object/bbox/ymin")
-    ymax = _values(features, "image/object/bbox/ymax")
-    labels = _values(features, "image/object/class/label")
-    if not (xmin and xmax and ymin and ymax and labels):
-        return None
-
-    box = np.array([ymin[0], xmin[0], ymax[0], xmax[0]], dtype=np.float32)
-    label = 1.0 if labels[0] == 1 else 0.0
-
-    image = Image.open(io.BytesIO(encoded[0])).convert("RGB")
-    image = image.resize((IMAGE_SIZE, IMAGE_SIZE), Image.BILINEAR)
-    arr = np.asarray(image, dtype=np.float32) / 255.0
-    return Sample(image=arr, box=box, label=label)
-
-
-_IMAGE_SUFFIXES = (".jpg", ".jpeg", ".png", ".bmp")
-
-
-def _load_yolo_sample(image_path: str, label_path: str) -> Sample | None:
-    """Build one sample from a YOLO image and its label file (class cx cy w h, normalised)."""
-    with open(label_path, encoding="utf-8") as fh:
-        rows = [line.split() for line in fh if line.strip()]
-    if not rows:
-        return None  # no box, skipped as in the TFRecord path
-
-    cx, cy, w, h = (float(v) for v in rows[0][1:5])  # first box, as in the original notebook
-    box = np.array(
-        [cy - h / 2, cx - w / 2, cy + h / 2, cx + w / 2], dtype=np.float32
-    )  # [ymin, xmin, ymax, xmax]
-
-    image = Image.open(image_path).convert("RGB")
-    image = image.resize((IMAGE_SIZE, IMAGE_SIZE), Image.BILINEAR)
-    arr = np.asarray(image, dtype=np.float32) / 255.0
-    # The YOLO export has one class ('number'), so a labelled box means a number is present.
-    return Sample(image=arr, box=box, label=1.0)
-
-
-def load_yolo_samples(split_dir: str) -> list[Sample]:
-    """Load a YOLO-format split laid out as <split_dir>/images and <split_dir>/labels."""
-    images_dir = os.path.join(split_dir, "images")
-    labels_dir = os.path.join(split_dir, "labels")
-    samples = []
-    for name in sorted(os.listdir(images_dir)):
-        stem, ext = os.path.splitext(name)
-        if ext.lower() not in _IMAGE_SUFFIXES:
+def _read_label_file(path: Path) -> np.ndarray:
+    rows = []
+    for line_no, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+        parts = line.split()
+        if not parts:
             continue
-        label_path = os.path.join(labels_dir, stem + ".txt")
-        if not os.path.exists(label_path):
-            continue  # unlabelled image: skipped, the same as an example without a box
-        sample = _load_yolo_sample(os.path.join(images_dir, name), label_path)
-        if sample is not None:
-            samples.append(sample)
-    if not samples:
-        raise ValueError(f"No usable YOLO examples found in {split_dir}")
-    return samples
+        if len(parts) < 5:
+            raise ValueError(f"{path}:{line_no}: expected 'class cx cy w h', got {line!r}")
+        cx, cy, w, h = (float(v) for v in parts[1:5])
+        if w <= 0 or h <= 0:
+            continue  # degenerate annotation, nothing to score against
+        rows.append(yolo_to_xyxy(cx, cy, w, h))
+    if not rows:
+        return np.zeros((0, 4), dtype=np.float32)
+    return clip01(np.asarray(rows, dtype=np.float32))
 
 
-def load_samples(path: str) -> list[Sample]:
-    """Load every usable example from a TFRecord file, or a YOLO split directory."""
-    if os.path.isdir(path):
-        return load_yolo_samples(path)
-    samples = []
-    for payload in iter_records(path):
-        sample = parse_example(payload)
-        if sample is not None:
-            samples.append(sample)
-    if not samples:
-        raise ValueError(f"No usable examples found in {path}")
-    return samples
+def load_split(split_dir: str | os.PathLike) -> list[ImageRecord]:
+    """Load every image of one split with its boxes, sorted by file name."""
+    split_dir = Path(split_dir)
+    images_dir, labels_dir = split_dir / "images", split_dir / "labels"
+    if not images_dir.is_dir():
+        raise FileNotFoundError(f"No images/ folder in {split_dir}")
+    records = []
+    for img in sorted(images_dir.iterdir()):
+        if img.suffix.lower() not in IMAGE_SUFFIXES:
+            continue
+        label = labels_dir / f"{img.stem}.txt"
+        if label.exists():
+            records.append(ImageRecord(str(img), _read_label_file(label), True))
+        else:
+            records.append(ImageRecord(str(img)))
+    if not records:
+        raise ValueError(f"No images found in {images_dir}")
+    return records
+
+
+def find_split_dirs(root: str | os.PathLike) -> dict[str, Path]:
+    """Return {'train': ..., 'val': ..., 'test': ...} for a dataset root."""
+    root = Path(root)
+    found = {}
+    for key, names in SPLIT_NAMES.items():
+        for name in names:
+            if (root / name / "images").is_dir():
+                found[key] = root / name
+                break
+    missing = [k for k in SPLIT_NAMES if k not in found]
+    if missing:
+        raise FileNotFoundError(f"{root} is missing split(s) {missing} (need <split>/images)")
+    return found
+
+
+def load_dataset(root: str | os.PathLike) -> dict[str, list[ImageRecord]]:
+    return {key: load_split(path) for key, path in find_split_dirs(root).items()}
+
+
+def split_stats(records: list[ImageRecord]) -> dict:
+    """Counts and box-size statistics used in the dataset table of the paper."""
+    boxes = [r.boxes for r in records if r.labelled]
+    all_boxes = np.concatenate(boxes) if boxes else np.zeros((0, 4))
+    w = all_boxes[:, 2] - all_boxes[:, 0]
+    h = all_boxes[:, 3] - all_boxes[:, 1]
+    rel = np.sqrt(w * h) if len(all_boxes) else np.zeros(0)
+
+    def q(v, p):
+        return float(np.quantile(v, p)) if len(v) else None
+
+    return {
+        "images": len(records),
+        "labelled_images": sum(r.labelled for r in records),
+        "images_without_label_file": sum(not r.has_label_file for r in records),
+        "boxes": int(len(all_boxes)),
+        "max_boxes_per_image": int(max((len(r.boxes) for r in records), default=0)),
+        "box_rel_size_median": q(rel, 0.5),
+        "box_rel_size_p10": q(rel, 0.1),
+        "box_rel_size_p90": q(rel, 0.9),
+    }

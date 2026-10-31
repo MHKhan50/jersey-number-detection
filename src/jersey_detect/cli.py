@@ -1,68 +1,151 @@
-"""Command-line interface: `jersey-detect train ...` and `jersey-detect predict ...`."""
+"""Command-line interface.
+
+    jersey-detect run       --data DIR --out DIR [--config configs/kaggle.json]
+    jersey-detect train     --data DIR --out DIR [--config configs/jersey_net.json] [--seed N]
+    jersey-detect evaluate  --checkpoint best.pt --data DIR [--split test]
+    jersey-detect score     --data DIR --split test --predictions DIR   (YOLO txt with confidence)
+    jersey-detect predict   --checkpoint best.pt --images a.jpg b.jpg --out DIR
+    jersey-detect stats     --data DIR
+    jersey-detect synthetic --out DIR
+"""
 
 from __future__ import annotations
 
 import argparse
 import json
+from pathlib import Path
 
-from jersey_detect.train import TrainConfig
+import numpy as np
+
+
+def _load_json(path: str | None) -> dict:
+    if not path:
+        return {}
+    with open(path, encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+def read_yolo_predictions(pred_dir: str, records) -> tuple[list, list]:
+    """Read ``class cx cy w h conf`` files (Ultralytics ``save_txt=True, save_conf=True``)."""
+    from jersey_detect.boxes import yolo_to_xyxy
+
+    dets, scores = [], []
+    for r in records:
+        f = Path(pred_dir) / f"{r.stem}.txt"
+        rows = []
+        if f.exists():
+            for line in f.read_text().splitlines():
+                p = line.split()
+                if len(p) >= 6:
+                    rows.append([*yolo_to_xyxy(*map(float, p[1:5])), float(p[5])])
+        arr = np.asarray(rows, dtype=np.float32).reshape(-1, 5)
+        dets.append(np.clip(arr[:, :4], 0, 1))
+        scores.append(arr[:, 4])
+    return dets, scores
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="jersey-detect")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    train_p = sub.add_parser("train", help="train the detector on TFRecord files")
-    train_p.add_argument("--config", help="JSON file with default training settings")
-    train_p.add_argument("--train-record")
-    train_p.add_argument("--val-record")
-    train_p.add_argument("--out-dir")
-    train_p.add_argument("--epochs", type=int)
-    train_p.add_argument("--batch-size", type=int)
-    train_p.add_argument("--learning-rate", type=float)
-    train_p.add_argument("--seed", type=int)
-    train_p.add_argument("--box-loss", choices=["mse", "l1", "giou"])
-    train_p.add_argument("--select-by", choices=["loss", "iou"])
+    p = sub.add_parser("run", help="full experiment: baselines + JerseyNet over seeds")
+    p.add_argument("--data", required=True)
+    p.add_argument("--out", required=True)
+    p.add_argument("--config", help="JSON with PipelineConfig fields")
+    p.add_argument("--hours", type=float, help="overall time budget in hours")
 
-    pred_p = sub.add_parser("predict", help="detect on one image and save an annotated copy")
-    pred_p.add_argument("--checkpoint", required=True)
-    pred_p.add_argument("--image", required=True)
-    pred_p.add_argument("--out", required=True)
+    p = sub.add_parser("train", help="train one JerseyNet run")
+    p.add_argument("--data", required=True)
+    p.add_argument("--out", required=True)
+    p.add_argument("--config", help="JSON with DetectorConfig fields")
+    p.add_argument("--seed", type=int)
+    p.add_argument("--epochs", type=int)
 
-    eval_p = sub.add_parser(
-        "evaluate", help="score a checkpoint on a TFRecord file or a YOLO split directory"
-    )
-    eval_p.add_argument("--checkpoint", required=True)
-    eval_p.add_argument("--data", required=True, help="TFRecord file or YOLO split directory")
+    p = sub.add_parser("evaluate", help="evaluate a JerseyNet checkpoint on a split")
+    p.add_argument("--checkpoint", required=True)
+    p.add_argument("--data", required=True)
+    p.add_argument("--split", default="test", choices=["train", "val", "test"])
+
+    p = sub.add_parser("score", help="score saved YOLO-format predictions with the same protocol")
+    p.add_argument("--data", required=True)
+    p.add_argument("--split", default="test", choices=["train", "val", "test"])
+    p.add_argument("--predictions", required=True)
+
+    p = sub.add_parser("predict", help="draw detections on images")
+    p.add_argument("--checkpoint", required=True)
+    p.add_argument("--images", nargs="+", required=True)
+    p.add_argument("--out", required=True)
+    p.add_argument("--threshold", type=float, default=0.3)
+
+    p = sub.add_parser("stats", help="dataset statistics and cross-split duplicate check")
+    p.add_argument("--data", required=True)
+
+    p = sub.add_parser("synthetic", help="write a small synthetic dataset for smoke tests")
+    p.add_argument("--out", required=True)
 
     args = parser.parse_args(argv)
-    if args.command == "evaluate":
-        from jersey_detect.evaluate import evaluate_checkpoint
 
-        print(json.dumps(evaluate_checkpoint(args.checkpoint, args.data)))
-        return 0
+    if args.command == "run":
+        from jersey_detect.pipeline import PipelineConfig, run_pipeline
+
+        settings = _load_json(args.config)
+        if args.hours is not None:
+            settings["time_budget_hours"] = args.hours
+        summary = run_pipeline(PipelineConfig(data_root=args.data, out_dir=args.out, **settings))
+        print(json.dumps({"errors": summary["errors"], "stages": summary["stages"]}, indent=2))
+        return 1 if summary["errors"] else 0
+
     if args.command == "train":
-        from jersey_detect.train import train
+        from jersey_detect.engine import DetectorConfig, train_detector
 
-        settings = {}
-        if args.config:
-            with open(args.config, encoding="utf-8") as fh:
-                settings = json.load(fh)
-        for key in ("train_record", "val_record", "out_dir", "epochs", "batch_size",
-                    "learning_rate", "seed", "box_loss", "select_by"):
-            value = getattr(args, key.replace("-", "_"), None)
-            if value is not None:
-                settings[key] = value
-        if "train_record" not in settings or "val_record" not in settings:
-            parser.error("train needs --train-record and --val-record (or them in --config)")
-        final = train(TrainConfig(**settings))
-        print(json.dumps({"final": final}))
+        settings = _load_json(args.config)
+        settings.update(data_root=args.data, out_dir=args.out)
+        for key in ("seed", "epochs"):
+            if getattr(args, key) is not None:
+                settings[key] = getattr(args, key)
+        print(json.dumps(train_detector(DetectorConfig.from_dict(settings)), indent=2))
         return 0
 
-    from jersey_detect.predict import predict_file
+    if args.command == "evaluate":
+        from jersey_detect.data import load_dataset
+        from jersey_detect.engine import evaluate_records, load_detector, pick_device
 
-    result = predict_file(args.checkpoint, args.image, args.out)
-    print(json.dumps(result))
+        device = pick_device()
+        model, state = load_detector(args.checkpoint, device)
+        records = load_dataset(args.data)[args.split]
+        print(json.dumps(evaluate_records(model, records, state["config"]["image_size"], device), indent=2))
+        return 0
+
+    if args.command == "score":
+        from jersey_detect.data import load_dataset
+        from jersey_detect.metrics import all_metrics, bootstrap_ci
+
+        records = load_dataset(args.data)[args.split]
+        dets, scores = read_yolo_predictions(args.predictions, records)
+        gts = [r.boxes for r in records]
+        res = all_metrics(gts, dets, scores)
+        res["ci95"] = bootstrap_ci(gts, dets, scores)
+        print(json.dumps(res, indent=2))
+        return 0
+
+    if args.command == "predict":
+        from jersey_detect.predict import predict_images
+
+        print(json.dumps(predict_images(args.checkpoint, args.images, args.out, args.threshold), indent=2))
+        return 0
+
+    if args.command == "stats":
+        from jersey_detect.data import load_dataset, split_stats
+        from jersey_detect.leakage import leakage_report
+
+        splits = load_dataset(args.data)
+        print(json.dumps({"splits": {k: split_stats(v) for k, v in splits.items()},
+                          "leakage": leakage_report(splits)}, indent=2))
+        return 0
+
+    from jersey_detect.synthetic import make_dataset
+
+    print(make_dataset(args.out))
     return 0
 
 

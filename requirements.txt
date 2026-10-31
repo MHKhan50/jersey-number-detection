@@ -1,5 +1,4 @@
-tensorflow>=2.10.0
-numpy
-pandas
-matplotlib
-opencv-python
+# Runtime dependencies. PyTorch is installed separately so you can pick the CPU or CUDA build:
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+numpy>=1.26
+pillow>=10.1

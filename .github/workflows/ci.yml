@@ -7,11 +7,16 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python-version }}
+          cache: pip
       - name: Install CPU PyTorch
         run: pip install torch --index-url https://download.pytorch.org/whl/cpu
       - name: Install package and dev tools
@@ -20,3 +25,8 @@ jobs:
         run: ruff check src tests
       - name: Test
         run: pytest -q
+      - name: Run the Kaggle notebook end to end (synthetic data)
+        if: matrix.python-version == '3.12'
+        env:
+          RUN_NOTEBOOK: "1"
+        run: pytest -q tests/test_notebook.py -k end_to_end

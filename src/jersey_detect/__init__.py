@@ -1,3 +1,3 @@
-"""Single-object jersey detector: bounding box plus presence of jersey number '0'."""
+"""Jersey-number localisation: a from-scratch anchor-free detector and its evaluation tools."""
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"

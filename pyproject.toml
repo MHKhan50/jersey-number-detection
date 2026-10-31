@@ -4,33 +4,44 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "jersey-detect"
-version = "1.0.0"
-description = "Single-object jersey detector: bounding box and presence of jersey number '0', trained from scratch with a small CNN."
+version = "2.0.0"
+description = "Jersey-number localisation in sports images: a from-scratch anchor-free detector, baselines and COCO-style evaluation."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "Muzammal Hussain" }]
 dependencies = [
     "numpy>=1.26",
-    "pillow>=10.0",
+    "pillow>=10.1",
 ]
 
 [project.optional-dependencies]
-train = ["torch>=2.2"]
-dev = ["torch>=2.2", "pytest>=8.0", "ruff>=0.5"]
+train = ["torch>=2.3"]
+dev = [
+    "torch>=2.3",
+    "pytest>=8.0",
+    "ruff>=0.5",
+    "pycocotools>=2.0.7",
+    "nbformat>=5.9",
+    "nbclient>=0.10",
+    "ipykernel>=6.29",
+]
 
 [project.scripts]
 jersey-detect = "jersey_detect.cli:main"
+
+[project.urls]
+Repository = "https://github.com/MHKhan50/jersey-number-detection"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.ruff]
-line-length = 100
+line-length = 110
 target-version = "py310"
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I"]
+select = ["E", "F", "W", "I", "B", "UP"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

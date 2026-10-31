@@ -1,0 +1,16 @@
+{
+  "seeds": [0, 1],
+  "time_budget_hours": 0.5,
+  "run_legacy": true,
+  "legacy_epochs": 1,
+  "leakage": true,
+  "bootstrap": 50,
+  "detector": {
+    "image_size": 128,
+    "epochs": 2,
+    "batch_size": 8,
+    "eval_every": 1,
+    "num_workers": 0,
+    "warmup_epochs": 1
+  }
+}
