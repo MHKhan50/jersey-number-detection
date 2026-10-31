@@ -152,10 +152,10 @@ Ablation of the v1 regressor, test split, run before the box-ordering fix:
 | D. GIoU, IoU selection | GIoU | 50 | validation IoU | 0.280 | 0.000 |
 
 Longer training does not help, and neither loss moves the regressor beyond the baseline range.
-The design is the likely limit: global average pooling discards where features occur, the model
-can output only one box when images can contain several numbers, and the training images hold up to nine numbers each,
-leaves small numbers a few pixels wide. JerseyNet addresses each of these (spatial heatmap, many
-outputs, stride-4 features on a 2× upsampled input). The GIoU collapse is reported as a negative
+The design is the likely limit: global average pooling discards where features occur, the
+model can output only one box although images hold up to nine numbers, and the 128 × 128 input
+leaves the smallest numbers about four pixels wide. JerseyNet addresses each of these (a spatial
+heatmap, any number of outputs, stride-4 features on a 2× upsampled input). The GIoU collapse is reported as a negative
 result with an open diagnosis; the v1 code is preserved in the version 1.0.0 archive.
 [PENDING: confirm with the v2 results.]
 

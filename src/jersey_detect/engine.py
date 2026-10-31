@@ -38,7 +38,7 @@ _RUN_IDENTITY = ("image_size", "epochs", "batch_size", "lr", "weight_decay", "se
 class DetectorConfig:
     data_root: str
     out_dir: str
-    image_size: int = 512
+    image_size: int = 256
     epochs: int = 140
     batch_size: int = 32
     lr: float = 1e-3
