@@ -1,60 +1,87 @@
-# Jersey Number Detection and Player Tracking
+# Jersey Number Localisation
 
-A small convolutional network, trained from scratch, that finds a player in a
-sports image and reports whether jersey number **0** is present. It is a
-single-object detector: one bounding box and one presence probability per image.
+[![CI](https://github.com/MHKhan50/jersey-number-detection/actions/workflows/ci.yml/badge.svg)](https://github.com/MHKhan50/jersey-number-detection/actions/workflows/ci.yml)
 
-> **Scope, stated plainly.** The original project was framed as "jersey number
-> classification". The training data has one label (`1`, the number `0`), and
-> only the first annotated box in each image is used. The model therefore
-> answers *"is the number 0 present, and where is the player?"*. It does not
-> read arbitrary jersey numbers, and it does not track players across frames.
+Find the jersey numbers in a sports image. The main model, **JerseyNet**, is an anchor-free
+detector in the style of CenterNet, trained from random initialisation (no ImageNet or COCO
+weights). The repository also contains the baselines, the evaluation protocol and a Kaggle
+notebook that runs the whole experiment unattended.
+
+The project started as 2025 coursework (a TensorFlow notebook, kept in [`legacy/`](legacy/)).
+Version 1 ported that network to PyTorch. Version 2 replaces it with a real detector, because
+the v1 network regressed a single box from globally pooled features and barely beat a constant
+prediction (see [Results](#results)).
+
+## Task
+
+Input: an image. Output: a box and a confidence score for every jersey number in it. The digits
+are not read; this is the localisation stage that a recognition system (for example a scene-text
+recogniser such as PARSeq) would run on.
 
 ## Results
 
-Evaluation uses the first annotated box per image. Images without a ground-truth
-box are not scored. Mean IoU is taken over scored images, and an image where the
-model predicts no box counts as IoU 0.
+**Status:** the v2 runs are in progress. The table will be filled from `results/results.md`
+once the Kaggle run has finished. No v2 numbers are reported until then.
 
-Data: Roboflow `jersey-2` export (single class `number`, YOLO format), with
-3,165 train, 301 validation and 148 test images. Some validation and test images
-have no label and are not scored.
+The v1 numbers below were measured with the old protocol (first annotated box only, labelled
+images only) and are kept for reference.
 
-| Model | Split | Scored images | Mean IoU (positives) | Share with IoU ≥ 0.5 |
-|---|---|---|---|---|
-| Mean-box baseline | Validation | 263 | 0.027 | _not measured_ |
-| Mean-box baseline | Test | 130 | 0.016 | _not measured_ |
-| Custom CNN, from scratch (15 epochs) | Validation | 263 | 0.045 | _not measured_ |
-| Custom CNN, from scratch (15 epochs) | Test | 130 | 0.044 | _not measured_ |
-| YOLOv8n, fine-tuned 50 epochs (imgsz 640) | Validation | 263 | 0.593 | 70.3% |
-| YOLOv8n, fine-tuned 50 epochs (imgsz 640) | Test | 130 | 0.581 | 68.5% |
-
-The test split is the reported result. The validation split was used to select
-checkpoints, so its numbers are slightly optimistic.
-
-The YOLOv8n row is a pretrained detector fine-tuned on this data, so it is not
-the same architecture as the custom CNN. The custom CNN is trained from scratch
-with the package in this repository. Class accuracy is not reported: every
-labelled image in this export is positive, so the metric is always 1.0 and says
-nothing about presence.
+| Model (v1 protocol) | Test mean IoU | Test IoU ≥ 0.5 |
+|---|---|---|
+| Mean-box baseline | 0.016 | – |
+| v1 CNN regressor, from scratch, 15 epochs | 0.044 | – |
+| YOLOv8n, COCO-pretrained, fine-tuned 50 epochs | 0.581 | 68.5% |
 
 ## Dataset
 
-The dataset is a Roboflow export in TFRecord format (`persons-jersey.tfrecord`
-in `train/` and `valid/`). It is not included in this repository. Create your
-own download link on Roboflow Universe and export it. Never commit API keys or
-download tokens.
+Roboflow export `jersey-2` (one class, `number`, YOLO format, public domain), with 3,165 train,
+301 validation and 148 test images. It is not included in this repository. Download it from
+Roboflow in **YOLOv8** format; the expected layout is:
 
-Each example holds a JPEG (`image/encoded`) and bounding boxes
-(`image/object/bbox/{ymin,xmin,ymax,xmax}`, normalised to 0-1) with a class
-label. Images without a box are skipped.
+```
+jersey-2/
+  train/images/*.jpg   train/labels/*.txt
+  valid/images/        valid/labels/
+  test/images/         test/labels/
+```
 
-The YOLO-format `jersey-2` export is also supported. Pass the split directory
-(`jersey-2/train`, `jersey-2/valid` or `jersey-2/test`, each with `images/` and
-`labels/`). Its single class is `number`, so a labelled image means a jersey
-number is present. It is not restricted to the number 0. The presence metric
-therefore means "a number is present" on this export, and the two datasets
-should not be reported as the same task.
+Images without a label file, or with an empty one, are kept as negatives. Never commit API keys
+or download links: the code reads `ROBOFLOW_API_KEY` from the environment (or a Kaggle secret)
+and does not store it.
+
+`jersey-detect stats --data jersey-2` prints counts, box sizes and a cross-split duplicate check.
+
+## Evaluation protocol
+
+* **Primary metric:** COCO-style AP50:95, with AP50, AP75 and AR@100. Every annotated box counts,
+  and a box predicted on an image with no label is a false positive. The implementation is in
+  [`coco_eval.py`](src/jersey_detect/coco_eval.py) and is tested against `pycocotools`.
+* **v1 comparison:** the highest-scoring box against the first annotated box, as mean IoU and the
+  share of images with IoU ≥ 0.5.
+* **Model selection** uses validation AP50:95 only. The test split is scored once per trained
+  model and never influences training or checkpoint choice.
+* **Uncertainty:** the test split is small, so test metrics are reported with a 95% bootstrap
+  interval over images, and JerseyNet is trained with three seeds (mean and standard deviation).
+* **Leakage check:** before training, the pipeline reports images that share a Roboflow source
+  name or are near-identical (64-bit difference hash, Hamming distance ≤ 4) across splits. The
+  official splits are not changed, so results stay comparable; the counts are reported.
+* **Pretrained detectors:** save their predictions as YOLO text files with confidences
+  (Ultralytics `save_txt=True, save_conf=True`) and score them with the same code:
+  `jersey-detect score --data jersey-2 --split test --predictions runs/detect/predict/labels`.
+
+## Model
+
+| Part | Design |
+|---|---|
+| Backbone | Residual stages with batch norm at strides 4, 8, 16, 32 (64, 128, 192, 256 channels) |
+| Neck | Top-down feature pyramid fused back to stride 4 (jersey numbers are small) |
+| Heads | Centre heatmap (penalty-reduced focal loss), width/height and offset (L1) |
+| Decoding | 3×3 max-pool peak picking, top 100; no anchors and no NMS |
+| Input | 512×512 letterbox; training adds random scale (0.6–1.3), placement and colour jitter. No horizontal flip, which would mirror the digits |
+| Training | AdamW, lr 1e-3 with warm-up and cosine decay, weight decay 1e-4, batch 32, mixed precision on GPU, 140 epochs |
+
+About 3.5 million parameters, all trained from scratch. Settings are in
+[`configs/jersey_net.json`](configs/jersey_net.json) and [`configs/kaggle.json`](configs/kaggle.json).
 
 ## Installation
 
@@ -62,57 +89,36 @@ Python 3.10 or newer.
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
+source .venv/bin/activate
 pip install torch --index-url https://download.pytorch.org/whl/cpu   # or a CUDA build
 pip install -e ".[dev]"
 ```
 
-## Reproducing
+## Running
+
+Full experiment (dataset report, leakage check, baselines, JerseyNet over three seeds):
 
 ```bash
-jersey-detect train \
-  --config configs/default.json \
-  --train-record data/train/persons-jersey.tfrecord \
-  --val-record data/valid/persons-jersey.tfrecord \
-  --out-dir runs/baseline
+jersey-detect run --data /data/jersey-2 --out results --config configs/kaggle.json
 ```
 
-This writes `runs/baseline/best.pt`, `history.json` (per-epoch metrics) and
-`config.json` (the exact settings used). Set `--seed` to repeat a run.
-
-On the YOLO-format `jersey-2` export, pass the split directories instead:
+Single training run, evaluation and prediction:
 
 ```bash
-jersey-detect train \
-  --config configs/default.json \
-  --train-record /data/jersey-2/train \
-  --val-record /data/jersey-2/valid \
-  --out-dir runs/jersey2
-
-jersey-detect evaluate --checkpoint runs/jersey2/best.pt --data /data/jersey-2/test
+jersey-detect train --data /data/jersey-2 --out runs/seed0 --config configs/jersey_net.json --seed 0
+jersey-detect evaluate --checkpoint runs/seed0/best.pt --data /data/jersey-2 --split test
+jersey-detect predict --checkpoint runs/seed0/best.pt --images frame.jpg --out annotated/
 ```
 
-`evaluate` reports the same metrics as training (box MSE, class accuracy,
-mean IoU over labelled images) on any split, so validation and test numbers
-can be compared directly.
+Training writes `last.pt` after every epoch and resumes from it when the same command is run
+again with the same settings.
 
-## Prediction
+### Kaggle
 
-```bash
-jersey-detect predict --checkpoint runs/baseline/best.pt \
-  --image match_frame.jpg --out annotated.jpg
-```
-
-The command prints the probability and the box in pixel coordinates, and saves
-an annotated copy.
-
-## Docker
-
-```bash
-docker build -t jersey-detect .
-docker run --rm -v "$PWD:/data" jersey-detect predict \
-  --checkpoint /data/runs/baseline/best.pt --image /data/frame.jpg --out /data/out.jpg
-```
+[`notebooks/kaggle_train.ipynb`](notebooks/kaggle_train.ipynb) runs the full experiment.
+Import it with *File → Import Notebook → Link* and this repository's URL to the notebook, attach
+the dataset as an input (or add a `ROBOFLOW_API_KEY` secret), choose *GPU T4 x2*, turn Internet
+on and use *Save & Run All*. Results are written to `/kaggle/working/results`.
 
 ## Tests
 
@@ -121,46 +127,49 @@ pytest -q
 ruff check src tests
 ```
 
-The data, metric and TFRecord tests run without PyTorch. Model and training
-tests are skipped when PyTorch is not installed.
+The suite covers data loading, the AP implementation (including agreement with `pycocotools`),
+target encoding and decoding, resuming, the time budget, the full pipeline on a synthetic dataset,
+and an end-to-end run of the Kaggle notebook in CI.
 
 ## Project layout
 
 ```
 src/jersey_detect/
-  tfrecord.py   TFRecord and tf.train.Example reader (no TensorFlow needed)
-  data.py       resize to 128x128, keep first box, build samples
-  metrics.py    IoU, mean IoU, binary accuracy
-  model.py      the CNN (same layer sizes as the original Keras model)
-  train.py      training loop with Adam, MSE for the box, BCE for presence
-  predict.py    single-image inference and drawing
-  cli.py        `jersey-detect train` and `jersey-detect predict`
-configs/        default training settings
-notebooks/      original exploration notebook (kept for reference)
-tests/          pytest suite
+  data.py         YOLO split loader, dataset statistics
+  transforms.py   letterbox, augmentation, CenterNet targets (NumPy only)
+  detector.py     JerseyNet, focal loss, decoding
+  engine.py       training loop (AMP, resume, time budget) and inference
+  coco_eval.py    COCO-style AP in NumPy
+  metrics.py      first-box protocol, bootstrap intervals
+  leakage.py      cross-split duplicate check
+  baselines.py    mean-box baseline and the v1 CNN regressor
+  pipeline.py     the full experiment
+  prepare.py      dataset discovery and Roboflow download
+  cli.py          `jersey-detect` command
+configs/          training and pipeline settings
+notebooks/        Kaggle notebook
+legacy/           2025 coursework notebook and slides
+docs/paper/       paper draft
+tests/            pytest suite
 ```
-
-## Differences from the original notebook
-
-- PyTorch replaces TensorFlow/Keras. The layer sizes, optimiser (Adam, lr 1e-3)
-  and losses are kept the same.
-- The presence output uses a logit with `BCEWithLogitsLoss`, which is
-  numerically equivalent to the original sigmoid with binary cross-entropy.
-- Image resizing uses Pillow bilinear, not TensorFlow's resize. Results can
-  differ slightly.
-- TFRecord CRCs are not checked when reading.
 
 ## Limitations
 
-- One object and one class per image. Other players and other numbers are ignored.
-- Trained on a small custom dataset. Generalisation to other sports, cameras or
-  lighting has not been measured.
-- The original notebook split the data by its own train/valid folders. Check
-  that no player appears in both splits before reporting results.
+* One dataset with a small test split (148 images). Intervals are wide and are reported.
+* Frames from the same match can appear in different splits of a Roboflow export. The duplicate
+  check measures this; it does not remove it.
+* Localisation only. The digits are not read.
+* GPU training is seeded but not bit-for-bit deterministic (cuDNN autotuning is on for speed).
+* JerseyNet and YOLOv8n differ in input size and pretraining, so that comparison is between
+  systems, not architectures.
+
+## Citation
+
+See [`CITATION.cff`](CITATION.cff).
 
 ## Licence
 
-Released under the [MIT Licence](LICENSE).
+[MIT](LICENSE).
 
 ## Author
 
