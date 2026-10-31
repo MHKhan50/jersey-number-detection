@@ -68,3 +68,13 @@ def test_synthetic_dataset_stats(synthetic_root):
     assert 0 < stats["labelled_images"] < stats["images"]
     assert stats["images_without_label_file"] > 0
     assert stats["boxes"] >= stats["labelled_images"]
+
+
+def test_find_dataset_searches_nested_folders(tmp_path):
+    from jersey_detect.prepare import find_dataset
+
+    root = tmp_path / "input" / "datasets" / "user" / "jersey" / "jersey-2"
+    for name in ("train", "valid", "test"):
+        _split(root / name, {"x": "0 0.5 0.5 0.1 0.1\n"})
+    assert find_dataset([tmp_path / "input"]) == root
+    assert find_dataset([tmp_path / "missing"]) is None

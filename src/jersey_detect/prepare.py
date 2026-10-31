@@ -97,4 +97,26 @@ def locate_or_download(search_roots: list[str], download_dir: str) -> Path:
             "Dataset not found. Attach it as a Kaggle input (folder with train/valid/test) "
             "or add a ROBOFLOW_API_KEY secret."
         )
-    return download_roboflow(download_dir, key)
+    try:
+        return download_roboflow(download_dir, key)
+    except Exception as exc:  # noqa: BLE001 - fall back to the official SDK
+        print(f"Roboflow REST download failed ({type(exc).__name__}); trying the roboflow package")
+    return _download_with_sdk(download_dir, key)
+
+
+def _download_with_sdk(dest: str, api_key: str) -> Path:
+    import subprocess
+    import sys
+
+    try:
+        import roboflow  # noqa: F401
+    except ImportError:
+        subprocess.run([sys.executable, "-m", "pip", "install", "-q", "roboflow"], check=True)
+    from roboflow import Roboflow
+
+    project = Roboflow(api_key=api_key).workspace(DEFAULT_WORKSPACE).project(DEFAULT_PROJECT)
+    project.version(DEFAULT_VERSION).download("yolov8", location=str(dest), overwrite=True)
+    found = find_dataset([dest])
+    if found is None:
+        raise RuntimeError(f"Roboflow download in {dest} has no train/valid/test split")
+    return found
