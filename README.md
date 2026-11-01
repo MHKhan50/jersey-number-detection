@@ -20,48 +20,38 @@ recogniser such as PARSeq) would run on.
 
 ## Results
 
-Test split (147 images, 234 boxes). Brackets are 95% bootstrap intervals over images.
-JerseyNet is the mean ± standard deviation over three seeds. Run on a Kaggle T4 GPU with
-[`configs/kaggle.json`](configs/kaggle.json).
+Test split (147 images, 234 boxes), all models scored with the same evaluator. Each row is the
+mean ± standard deviation over three seeds (0, 1, 2); both runs on a Kaggle T4 GPU.
 
-| Model | Pretrained | AP50:95 | AP50 | First-box mean IoU | First-box IoU ≥ 0.5 |
-|---|---|---|---|---|---|
-| Mean-box baseline | – | 0.000 | 0.000 | 0.016 [0.008, 0.025] | 0.0% |
-| v1 CNN regressor (15 epochs) | no | 0.000 | 0.000 [0.000, 0.002] | 0.051 [0.033, 0.069] | 0.0% |
-| **JerseyNet** (3 seeds) | no | **0.241 ± 0.006** | **0.495 ± 0.004** | **0.476 ± 0.023** | 56–63% |
-| YOLOv8n, fine-tuned 50 epochs ¹ | COCO | – | – | 0.581 | 68.5% |
-
-Per seed, test split:
-
-| Seed | Best epoch (val) | AP50:95 | AP50 | AP75 | AR@100 | First-box mean IoU | First-box IoU ≥ 0.5 |
+| Model | Pretrained | Input | AP50:95 | AP50 | AP75 | First-box mean IoU | Train time per seed |
 |---|---|---|---|---|---|---|---|
-| 0 | 115 | 0.234 [0.195, 0.288] | 0.491 [0.417, 0.580] | 0.219 | 0.360 | 0.454 [0.390, 0.522] | 56.2% |
-| 1 | 95 | 0.246 [0.203, 0.302] | 0.496 [0.418, 0.583] | 0.235 | 0.382 | 0.473 [0.407, 0.539] | 59.2% |
-| 2 | 90 | 0.242 [0.201, 0.298] | 0.498 [0.424, 0.586] | 0.227 | 0.371 | 0.500 [0.438, 0.566] | 63.1% |
+| Mean-box baseline | – | – | 0.000 | 0.000 | 0.000 | 0.016 | – |
+| v1 CNN regressor (seed 0) | no | 128 | 0.000 | 0.000 | 0.000 | 0.051 | < 1 min |
+| **JerseyNet** (this repository) | no | 256 | 0.241 ± 0.006 | 0.495 ± 0.004 | 0.227 ± 0.008 | 0.476 ± 0.023 | 22 min |
+| YOLOv8n | no | 256 | 0.352 ± 0.013 | 0.629 ± 0.019 | 0.372 ± 0.005 | 0.544 ± 0.017 | 34 min |
+| YOLOv8n | COCO | 256 | 0.384 ± 0.003 | 0.675 ± 0.004 | 0.394 ± 0.017 | 0.576 ± 0.016 | 12 min |
+| YOLOv8n | COCO | 640 | 0.419 ± 0.012 | 0.701 ± 0.008 | 0.476 ± 0.034 | 0.590 ± 0.007 | 22 min |
 
-Each seed trained for 140 epochs in about 22 minutes on one T4 (about 9 s per epoch); the whole
-pipeline took 1.2 hours. Validation AP50:95 reaches about 0.23 by epoch 25 and gains little after
-epoch 90 ([training curves](docs/paper/figures/val_ap_curves.png)). The complete outputs of this
-run (summary, per-split tables, dataset and duplicate reports, environment and log) are in
-[`docs/experiments/2026-11-01_kaggle_t4/`](docs/experiments/2026-11-01_kaggle_t4/); it used commit
-`8a40029`.
+Per-seed tables with 95% bootstrap intervals are in
+[`docs/experiments/2026-11-01_kaggle_t4/`](docs/experiments/2026-11-01_kaggle_t4/) (JerseyNet and
+baselines, commit `8a40029`) and
+[`docs/experiments/2026-11-01_kaggle_t4_yolo/`](docs/experiments/2026-11-01_kaggle_t4_yolo/)
+(YOLOv8n, [`notebooks/kaggle_yolo_baseline.ipynb`](notebooks/kaggle_yolo_baseline.ipynb)).
+JerseyNet training curves: [`docs/paper/figures/val_ap_curves.png`](docs/paper/figures/val_ap_curves.png).
 
-¹ Measured earlier with the first-box protocol only. The YOLOv8n baselines are being re-run with
-[`notebooks/kaggle_yolo_baseline.ipynb`](notebooks/kaggle_yolo_baseline.ipynb), which trains
-YOLOv8n COCO-pretrained at 640 px and 256 px and from scratch at 256 px (three seeds each) and
-scores them with the same evaluator. Ultralytics (AGPL-3.0) is installed only for that notebook.
+What the numbers say, read from the bottom row up (AP50:95):
 
-What this shows:
+* **Resolution** (640 → 256 px, both pretrained): −0.035.
+* **Pretraining** (COCO → none, both 256 px): −0.032.
+* **Design and training recipe** (YOLOv8n → JerseyNet, both from scratch at 256 px): −0.111.
 
-* The v1 regressor is no better than predicting a constant box. Its first-box IoU (0.051)
-  reproduces the earlier 0.044 within noise, and the mean-box result (0.016) matches exactly,
-  which also checks the new evaluator against the old one.
-* JerseyNet, with no pretraining, raises first-box IoU from 0.05 to 0.48 and reaches AP50 of
-  about 0.50. Seeds agree closely (standard deviation under 0.01 AP).
-* The COCO-pretrained YOLOv8n is still ahead on the shared metric (0.581 against 0.476), so a
-  gap remains; part of it is pretraining and part is input size (640 against 256).
+So on this dataset COCO pretraining is worth little; most of the gap to YOLOv8n comes from the
+detector design and its training recipe, which is where JerseyNet can be improved. JerseyNet
+still turns the v1 network, which was no better than a constant box, into a working detector
+(first-box IoU 0.05 → 0.48).
 
-Full tables, per-seed metrics and test predictions are written to `results/` by the pipeline.
+The YOLOv8n 640 px seed-0 run reproduces the earlier first-box result exactly (0.581, 68.5%),
+and the mean-box baseline matches its earlier value (0.016), which cross-checks the evaluator.
 
 ## Dataset
 

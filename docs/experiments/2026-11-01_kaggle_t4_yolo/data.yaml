@@ -1,0 +1,5 @@
+train: /kaggle/input/datasets/muzammalhussain11/jersey-2/jersey-2/train/images
+val: /kaggle/input/datasets/muzammalhussain11/jersey-2/jersey-2/valid/images
+test: /kaggle/input/datasets/muzammalhussain11/jersey-2/jersey-2/test/images
+nc: 1
+names: ['number']

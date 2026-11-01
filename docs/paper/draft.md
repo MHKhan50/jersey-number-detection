@@ -10,12 +10,15 @@ We study how far a detector trained from random initialisation can go in localis
 numbers in sports images, and how it compares with a COCO-pretrained YOLOv8n fine-tuned on the
 same data. Our first attempt, a small network that regresses one box from globally pooled
 features, reached a test mean IoU of 0.044 against 0.016 for a constant mean-box prediction and
-0.581 for the fine-tuned YOLOv8n. We replace it with JerseyNet, a CenterNet-style detector with a
-residual backbone and a feature pyramid fused to stride 4, trained from scratch. All models are
-scored with COCO-style AP over every annotated box, plus the earlier first-box IoU, on the same
-public split, with bootstrap intervals and three seeds. On the test split JerseyNet reaches
-AP50:95 of 0.241 ± 0.006 and AP50 of 0.495 ± 0.004, and raises first-box IoU from 0.051 for the
-v1 regressor to 0.476 ± 0.023, against 0.581 for the pretrained YOLOv8n.
+0.581 for the fine-tuned YOLOv8n. We replace it with JerseyNet, a CenterNet-style detector with a residual backbone and a
+feature pyramid fused to stride 4, trained from scratch, and compare it with YOLOv8n trained from
+scratch and from COCO weights at two input sizes. All models are scored with COCO-style AP over
+every annotated box on the same public split, with bootstrap intervals and three seeds. JerseyNet
+reaches AP50:95 of 0.241 ± 0.006 (AP50 0.495), turning the v1 network into a working detector
+(first-box IoU 0.051 → 0.476). YOLOv8n reaches 0.352 from scratch and 0.384 from COCO weights at
+the same 256 px input, and 0.419 at 640 px. On this task COCO pretraining adds about 0.03 AP and
+higher resolution another 0.035, while the detector design and training recipe account for 0.11:
+the gap to a modern detector is mainly an architecture and recipe gap, not a pretraining gap.
 
 ## 1. Introduction
 
@@ -34,7 +37,8 @@ Contributions:
    selection on validation only, and a cross-split duplicate check.
 2. JerseyNet, a small anchor-free detector trained from scratch, compared with a mean-box
    baseline, our earlier single-box regressor, and a fine-tuned YOLOv8n.
-3. An analysis of why the single-box regressor fails. [PENDING]
+3. A decomposition of the gap to a pretrained detector into resolution, pretraining, and design
+   and training recipe, and an analysis of why the single-box regressor fails.
 
 ## 2. Related work
 
@@ -112,11 +116,18 @@ MSE on the first box, 15 epochs, weights after the last epoch.
   mixed precision. Validation every five epochs; the checkpoint with the best validation
   AP50:95 is kept. About 4.7 million parameters, all randomly initialised.
 
-### 4.4 Fine-tuned YOLOv8n
+### 4.4 YOLOv8n in three settings
 
-Ultralytics YOLOv8n from COCO-pretrained weights, fine-tuned for 50 epochs at image size 640,
-batch 16, seed 0. [PENDING: re-score its saved test predictions with our evaluator
-(`jersey-detect score`) so that all rows use the same protocol.]
+Ultralytics YOLOv8n with its default training recipe, batch 16, seeds 0, 1 and 2, checkpoint
+chosen by Ultralytics on the validation split:
+
+* COCO-pretrained, 640 px, 50 epochs (the earlier comparison);
+* COCO-pretrained, 256 px, 50 epochs (same input size as JerseyNet);
+* random initialisation (`yolov8n.yaml`), 256 px, 140 epochs (same input size and epochs as
+  JerseyNet).
+
+Predictions are made with confidence threshold 0.001, NMS IoU 0.7 and at most 100 boxes per image,
+and scored with the same evaluator as all other models.
 
 ## 5. Evaluation protocol
 
@@ -136,22 +147,35 @@ v1 protocol, test split (130 scored images), from the earlier runs:
 
 | Model | Mean IoU | Share with IoU ≥ 0.5 |
 |---|---|---|
-| Mean-box baseline | 0.016 | [PENDING] |
-| v1 CNN regressor (15 epochs) | 0.044 | [PENDING] |
+| Mean-box baseline | 0.016 | – |
+| v1 CNN regressor (15 epochs) | 0.044 | – |
 | YOLOv8n (fine-tuned, 50 epochs) | 0.581 | 68.5% |
 
 Full protocol, test split (147 images, 234 boxes), with 95% bootstrap intervals over images.
 JerseyNet is the mean ± standard deviation over seeds 0, 1 and 2.
 
-| Model | AP50:95 | AP50 | AP75 | AR@100 | First-box mean IoU | First-box IoU ≥ 0.5 |
-|---|---|---|---|---|---|---|
-| Mean-box baseline | 0.000 | 0.000 | 0.000 | 0.000 | 0.016 [0.008, 0.025] | 0.0% |
-| v1 CNN regressor (15 epochs) | 0.000 | 0.000 [0.000, 0.002] | 0.000 | 0.001 | 0.051 [0.033, 0.069] | 0.0% |
-| JerseyNet, seed 0 | 0.234 [0.195, 0.288] | 0.491 [0.417, 0.580] | 0.219 | 0.360 | 0.454 [0.390, 0.522] | 56.2% |
-| JerseyNet, seed 1 | 0.246 [0.203, 0.302] | 0.496 [0.418, 0.583] | 0.235 | 0.382 | 0.473 [0.407, 0.539] | 59.2% |
-| JerseyNet, seed 2 | 0.242 [0.201, 0.298] | 0.498 [0.424, 0.586] | 0.227 | 0.371 | 0.500 [0.438, 0.566] | 63.1% |
-| JerseyNet, mean ± std | 0.241 ± 0.006 | 0.495 ± 0.004 | 0.227 ± 0.008 | 0.371 ± 0.011 | 0.476 ± 0.023 | 59.5% |
-| YOLOv8n (COCO, fine-tuned) | [PENDING] | [PENDING] | [PENDING] | [PENDING] | 0.581 | 68.5% |
+| Model | Pretrained | Input | AP50:95 | AP50 | AP75 | AR@100 | First-box mean IoU | First-box IoU ≥ 0.5 |
+|---|---|---|---|---|---|---|---|---|
+| Mean-box baseline | – | – | 0.000 | 0.000 | 0.000 | 0.000 | 0.016 [0.008, 0.025] | 0.0% |
+| v1 CNN regressor | no | 128 | 0.000 | 0.000 [0.000, 0.002] | 0.000 | 0.001 | 0.051 [0.033, 0.069] | 0.0% |
+| JerseyNet | no | 256 | 0.241 ± 0.006 | 0.495 ± 0.004 | 0.227 ± 0.008 | 0.371 ± 0.011 | 0.476 ± 0.023 | 59.5 ± 3.5% |
+| YOLOv8n | no | 256 | 0.352 ± 0.013 | 0.629 ± 0.019 | 0.372 ± 0.005 | 0.470 ± 0.013 | 0.544 ± 0.017 | 66.7 ± 1.9% |
+| YOLOv8n | COCO | 256 | 0.384 ± 0.003 | 0.675 ± 0.004 | 0.394 ± 0.017 | 0.489 ± 0.004 | 0.576 ± 0.016 | 71.0 ± 1.9% |
+| YOLOv8n | COCO | 640 | 0.419 ± 0.012 | 0.701 ± 0.008 | 0.476 ± 0.034 | 0.538 ± 0.012 | 0.590 ± 0.007 | 70.0 ± 1.5% |
+
+The baselines are single runs (bootstrap intervals in brackets); the detectors are mean ± standard
+deviation over three seeds. Per-seed numbers with intervals are in the repository
+(`docs/experiments/`). The YOLOv8n 640 px seed-0 run reproduces the earlier first-box result
+exactly (0.581, 68.5%).
+
+**Where the gap comes from.** Reading the table from the bottom up on AP50:95, lowering the input
+from 640 to 256 px costs 0.035, removing COCO pretraining costs 0.032, and replacing YOLOv8n's
+design and recipe with JerseyNet's, both from scratch at 256 px, costs 0.111. Pretraining is
+therefore a small part of the gap on this task; a from-scratch YOLOv8n recovers most of the
+pretrained model's accuracy. The decisive factors are in the detector and its training: YOLOv8n's
+multi-scale heads, its box-regression losses and its heavier augmentation (mosaic among others)
+are absent from JerseyNet, which uses a single stride-4 head, an L1 size loss and light
+augmentation. These are the natural next ablations.
 
 Per-seed test AP50:95 is 0.234, 0.246 and 0.242 (validation 0.247, 0.262, 0.262). The
 re-trained v1 regressor (0.051) reproduces the earlier 0.044 within its interval, and the
@@ -170,7 +194,9 @@ consistent with checkpoint selection on validation.
 *Figure 1. Validation AP50:95 every five epochs for the three seeds. The large marker is the
 checkpoint selected for testing.*
 
-[PENDING: YOLOv8n under the full protocol.]
+Training cost per seed on one T4: JerseyNet 22 minutes (140 epochs), YOLOv8n from scratch
+34 minutes (140 epochs), YOLOv8n from COCO 12 minutes (50 epochs, 256 px) and 22 minutes
+(640 px).
 
 ## 7. Analysis of the v1 regressor
 
@@ -197,8 +223,8 @@ ten-fold higher first-box IoU.
 * One dataset with 147 test images; intervals are wide.
 * Frames from one match may sit in different splits; we measure but do not remove this.
 * Localisation only; the digits are not read.
-* JerseyNet and YOLOv8n differ in input size and pretraining, so that comparison is between
-  systems, not architectures.
+* YOLOv8n uses its own default recipe (augmentation, losses, schedule); JerseyNet's recipe is
+  simpler. The from-scratch comparison is between complete systems, not architectures alone.
 * GPU training is seeded but not bit-for-bit deterministic.
 
 ## 9. Reproducibility
