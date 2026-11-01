@@ -1,0 +1,32 @@
+{
+  "train": {
+    "images": 3165,
+    "labelled_images": 2784,
+    "images_without_label_file": 0,
+    "boxes": 4941,
+    "max_boxes_per_image": 9,
+    "box_rel_size_median": 0.08005430549383163,
+    "box_rel_size_p10": 0.03149319440126419,
+    "box_rel_size_p90": 0.1800268590450287
+  },
+  "val": {
+    "images": 301,
+    "labelled_images": 263,
+    "images_without_label_file": 0,
+    "boxes": 485,
+    "max_boxes_per_image": 6,
+    "box_rel_size_median": 0.07594618201255798,
+    "box_rel_size_p10": 0.02870495803654194,
+    "box_rel_size_p90": 0.17804954946041107
+  },
+  "test": {
+    "images": 147,
+    "labelled_images": 130,
+    "images_without_label_file": 0,
+    "boxes": 234,
+    "max_boxes_per_image": 9,
+    "box_rel_size_median": 0.07544052600860596,
+    "box_rel_size_p10": 0.030257683247327805,
+    "box_rel_size_p90": 0.1806306540966034
+  }
+}

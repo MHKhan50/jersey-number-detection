@@ -43,7 +43,7 @@ Each seed trained for 140 epochs in about 22 minutes on one T4 (about 9 s per ep
 pipeline took 1.2 hours. Validation AP50:95 reaches about 0.23 by epoch 25 and gains little after
 epoch 90 ([training curves](docs/paper/figures/val_ap_curves.png)). The complete outputs of this
 run (summary, per-split tables, dataset and duplicate reports, environment and log) are in
-[`docs/results/2026-11-01_kaggle_t4/`](docs/results/2026-11-01_kaggle_t4/); it used commit
+[`docs/experiments/2026-11-01_kaggle_t4/`](docs/experiments/2026-11-01_kaggle_t4/); it used commit
 `8a40029`.
 
 ¹ Measured earlier with the first-box protocol only; it will be re-scored with
