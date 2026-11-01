@@ -31,6 +31,7 @@ from jersey_detect.transforms import Letterbox
 
 # Settings that change what is being trained. A checkpoint is only resumed if these match.
 _RUN_IDENTITY = ("image_size", "epochs", "batch_size", "lr", "weight_decay", "seed", "hflip",
+                 "mosaic", "giou_weight",
                  "scale_min", "scale_max", "warmup_epochs")
 
 
@@ -53,6 +54,8 @@ class DetectorConfig:
     amp: bool = True
     max_hours: float | None = None
     hflip: float = 0.0
+    mosaic: float = 0.0  # probability of a 4-image mosaic per training sample
+    giou_weight: float = 0.0  # weight of the GIoU box loss; 0 keeps the CenterNet recipe
     scale_min: float = 0.6
     scale_max: float = 1.3
     max_objects: int = 64
@@ -178,7 +181,7 @@ def train_detector(cfg: DetectorConfig, log=print) -> dict:
 
     splits = load_dataset(cfg.data_root)
     train_set = TrainDataset(splits["train"], cfg.image_size, cfg.max_objects,
-                             (cfg.scale_min, cfg.scale_max), cfg.hflip, cfg.seed)
+                             (cfg.scale_min, cfg.scale_max), cfg.hflip, cfg.seed, cfg.mosaic)
     batch_size = min(cfg.batch_size, len(train_set))
     loader = DataLoader(
         train_set,
@@ -232,12 +235,14 @@ def train_detector(cfg: DetectorConfig, log=print) -> dict:
         train_set.set_epoch(epoch)
         model.train()
         sums = {"loss": 0.0, "heatmap": 0.0, "wh": 0.0, "offset": 0.0}
+        if cfg.giou_weight > 0:
+            sums["giou"] = 0.0
         n = 0
         for batch in loader:
             batch = {k: v.to(device, non_blocking=True) for k, v in batch.items()}
             with torch.autocast(device_type=device.type, dtype=torch.float16, enabled=use_amp):
                 out = model(batch["image"])
-            losses = detection_loss(out, batch)
+            losses = detection_loss(out, batch, giou_weight=cfg.giou_weight)
             loss = losses["loss"]
             optimiser.zero_grad(set_to_none=True)
             if not torch.isfinite(loss):

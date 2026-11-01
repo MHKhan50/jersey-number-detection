@@ -8,6 +8,7 @@
     jersey-detect stats     --data DIR
     jersey-detect synthetic --out DIR
     jersey-detect yolo      --data DIR --out DIR [--hours 9.5]   (needs `pip install ultralytics`)
+    jersey-detect ablate    --data DIR --out DIR [--config configs/jersey_net.json] [--hours 10]
 """
 
 from __future__ import annotations
@@ -88,6 +89,13 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--seeds", type=int, nargs="+", default=[0, 1, 2])
     p.add_argument("--smoke", action="store_true", help="one tiny run, for testing the setup")
 
+    p = sub.add_parser("ablate", help="ablation study of JerseyNet training choices")
+    p.add_argument("--data", required=True)
+    p.add_argument("--out", required=True)
+    p.add_argument("--config", help="JSON with the baseline DetectorConfig settings")
+    p.add_argument("--hours", type=float, default=10.0)
+    p.add_argument("--smoke", action="store_true", help="tiny settings, for testing the setup")
+
     p = sub.add_parser("synthetic", help="write a small synthetic dataset for smoke tests")
     p.add_argument("--out", required=True)
 
@@ -150,6 +158,19 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps({"splits": {k: split_stats(v) for k, v in splits.items()},
                           "leakage": leakage_report(splits)}, indent=2))
         return 0
+
+    if args.command == "ablate":
+        from jersey_detect.ablation import SMOKE_VARIANTS, VARIANTS, run_ablation
+
+        base = _load_json(args.config)
+        kwargs = {}
+        if args.smoke:
+            base.update(image_size=128, epochs=1, batch_size=8, num_workers=0, eval_every=1,
+                        warmup_epochs=1, amp=False)
+            kwargs = {"variants": SMOKE_VARIANTS, "extra_seeds": (1,), "n_boot": 20}
+        summary = run_ablation(args.data, args.out, base, time_budget_hours=args.hours, **kwargs)
+        print(json.dumps({"errors": summary["errors"], "best": summary.get("best_variant")}, indent=2))
+        return 1 if summary["errors"] else 0
 
     if args.command == "yolo":
         from jersey_detect.yolo_baseline import SETTINGS, SMOKE_SETTINGS, run_yolo

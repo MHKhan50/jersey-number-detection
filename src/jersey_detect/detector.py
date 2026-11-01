@@ -106,17 +106,49 @@ def _gather(feat: torch.Tensor, index: torch.Tensor) -> torch.Tensor:
     return flat.gather(2, index.unsqueeze(1).expand(b, c, index.shape[1])).permute(0, 2, 1)
 
 
-def detection_loss(out: dict, batch: dict, wh_weight: float = 0.1) -> dict[str, torch.Tensor]:
-    hm = focal_loss(out["heatmap"], batch["heatmap"])
-    mask = batch["mask"].unsqueeze(-1)
-    n = mask.sum().clamp(min=1)
-    def masked_l1(name: str) -> torch.Tensor:
-        pred = _gather(out[name].float(), batch["index"])
-        return (F.l1_loss(pred, batch[name], reduction="none") * mask).sum() / n
+def giou(a: torch.Tensor, b: torch.Tensor, eps: float = 1e-7) -> torch.Tensor:
+    """Generalised IoU (Rezatofighi et al., 2019) of boxes (..., 4) as [x1, y1, x2, y2]."""
+    iw = (torch.min(a[..., 2], b[..., 2]) - torch.max(a[..., 0], b[..., 0])).clamp(min=0)
+    ih = (torch.min(a[..., 3], b[..., 3]) - torch.max(a[..., 1], b[..., 1])).clamp(min=0)
+    inter = iw * ih
+    area_a = (a[..., 2] - a[..., 0]).clamp(min=0) * (a[..., 3] - a[..., 1]).clamp(min=0)
+    area_b = (b[..., 2] - b[..., 0]).clamp(min=0) * (b[..., 3] - b[..., 1]).clamp(min=0)
+    union = area_a + area_b - inter + eps
+    cw = torch.max(a[..., 2], b[..., 2]) - torch.min(a[..., 0], b[..., 0])
+    ch = torch.max(a[..., 3], b[..., 3]) - torch.min(a[..., 1], b[..., 1])
+    enclose = cw * ch + eps
+    return inter / union - (enclose - union) / enclose
 
-    wh, off = masked_l1("wh"), masked_l1("offset")
+
+def _centre_boxes(wh: torch.Tensor, offset: torch.Tensor) -> torch.Tensor:
+    """Boxes around each object's centre, relative to its heatmap cell (feature-map units)."""
+    wh = wh.clamp(min=0)
+    return torch.cat([offset - wh / 2, offset + wh / 2], dim=-1)
+
+
+def detection_loss(out: dict, batch: dict, wh_weight: float = 0.1,
+                   giou_weight: float = 0.0) -> dict[str, torch.Tensor]:
+    """Focal heatmap loss, L1 on size and offset, and optionally a GIoU box loss.
+
+    The GIoU term scores the whole predicted box (size and offset together) at each object
+    centre. It is off by default, which reproduces the CenterNet recipe.
+    """
+    hm = focal_loss(out["heatmap"], batch["heatmap"])
+    mask = batch["mask"]
+    n = mask.sum().clamp(min=1)
+    pred_wh = _gather(out["wh"].float(), batch["index"])
+    pred_off = _gather(out["offset"].float(), batch["index"])
+    wh = (F.l1_loss(pred_wh, batch["wh"], reduction="none") * mask.unsqueeze(-1)).sum() / n
+    off = (F.l1_loss(pred_off, batch["offset"], reduction="none") * mask.unsqueeze(-1)).sum() / n
     total = hm + wh_weight * wh + off
-    return {"loss": total, "heatmap": hm.detach(), "wh": wh.detach(), "offset": off.detach()}
+    losses = {"heatmap": hm.detach(), "wh": wh.detach(), "offset": off.detach()}
+    if giou_weight > 0:
+        g = giou(_centre_boxes(pred_wh, pred_off), _centre_boxes(batch["wh"], batch["offset"]))
+        giou_loss = ((1 - g) * mask).sum() / n
+        total = total + giou_weight * giou_loss
+        losses["giou"] = giou_loss.detach()
+    losses["loss"] = total
+    return losses
 
 
 # ------------------------------------------------------------------- decoding

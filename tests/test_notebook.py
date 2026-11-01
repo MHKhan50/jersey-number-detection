@@ -8,6 +8,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 NOTEBOOK = ROOT / "notebooks" / "kaggle_train.ipynb"
 YOLO_NOTEBOOK = ROOT / "notebooks" / "kaggle_yolo_baseline.ipynb"
+ABLATION_NOTEBOOK = ROOT / "notebooks" / "kaggle_ablation.ipynb"
 
 
 def _code_cells():
@@ -15,7 +16,8 @@ def _code_cells():
     return [("".join(c["source"])) for c in nb["cells"] if c["cell_type"] == "code"]
 
 
-@pytest.mark.parametrize("path", [NOTEBOOK, YOLO_NOTEBOOK], ids=["train", "yolo"])
+@pytest.mark.parametrize("path", [NOTEBOOK, YOLO_NOTEBOOK, ABLATION_NOTEBOOK],
+                         ids=["train", "yolo", "ablation"])
 def test_notebook_is_valid_python_and_has_no_outputs(path):
     nb = json.loads(path.read_text())
     assert nb["nbformat"] == 4
@@ -74,3 +76,17 @@ def test_yolo_notebook_runs_in_smoke_mode(tmp_path, monkeypatch):
     nbclient.NotebookClient(nb, timeout=1800, kernel_name="python3").execute()
     summary = json.loads((out / "summary.json").read_text())
     assert summary["errors"] == [] and len(summary["results"]) == 1
+
+
+@pytest.mark.skipif(os.environ.get("RUN_NOTEBOOK") != "1", reason="set RUN_NOTEBOOK=1 to execute it")
+def test_ablation_notebook_runs_end_to_end_in_smoke_mode(tmp_path, monkeypatch):
+    nbformat = pytest.importorskip("nbformat")
+    nbclient = pytest.importorskip("nbclient")
+    out = tmp_path / "ablation"
+    monkeypatch.setenv("JND_SMOKE", "1")
+    monkeypatch.setenv("JND_REPO_DIR", str(ROOT))
+    monkeypatch.setenv("JND_OUT", str(out))
+    nb = nbformat.read(ABLATION_NOTEBOOK, as_version=4)
+    nbclient.NotebookClient(nb, timeout=1800, kernel_name="python3").execute()
+    summary = json.loads((out / "summary.json").read_text())
+    assert summary["errors"] == [] and summary["best_variant"]
