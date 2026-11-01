@@ -53,3 +53,14 @@ jobs:
           echo "::notice title=learning::$(grep LEARNING_CHECK learn.log | tail -n 1) $(tail -n 1 learn.log)"
           grep -E '^(FAILED|ERROR|E  )' learn.log | head -40 | while read -r line; do echo "::error::$line"; done
           exit $rc
+      - name: YOLO baseline smoke test (Ultralytics, synthetic data)
+        if: (success() || failure()) && matrix.python-version == '3.12'
+        env:
+          RUN_YOLO: "1"
+        run: |
+          pip install "ultralytics>=8.3"
+          rc=0; pytest -q -rs tests/test_yolo_baseline.py tests/test_notebook.py -k yolo > yolo.log 2>&1 || rc=$?
+          cat yolo.log
+          echo "::notice title=yolo::$(tail -n 1 yolo.log)"
+          grep -E '^(FAILED|ERROR|E  )' yolo.log | head -40 | while read -r line; do echo "::error::$line"; done
+          exit $rc

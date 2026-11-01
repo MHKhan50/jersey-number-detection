@@ -7,6 +7,7 @@
     jersey-detect predict   --checkpoint best.pt --images a.jpg b.jpg --out DIR
     jersey-detect stats     --data DIR
     jersey-detect synthetic --out DIR
+    jersey-detect yolo      --data DIR --out DIR [--hours 9.5]   (needs `pip install ultralytics`)
 """
 
 from __future__ import annotations
@@ -80,6 +81,13 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("stats", help="dataset statistics and cross-split duplicate check")
     p.add_argument("--data", required=True)
 
+    p = sub.add_parser("yolo", help="YOLOv8n baselines scored with the same evaluator")
+    p.add_argument("--data", required=True)
+    p.add_argument("--out", required=True)
+    p.add_argument("--hours", type=float, default=9.5, help="stop starting new runs after this")
+    p.add_argument("--seeds", type=int, nargs="+", default=[0, 1, 2])
+    p.add_argument("--smoke", action="store_true", help="one tiny run, for testing the setup")
+
     p = sub.add_parser("synthetic", help="write a small synthetic dataset for smoke tests")
     p.add_argument("--out", required=True)
 
@@ -142,6 +150,15 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps({"splits": {k: split_stats(v) for k, v in splits.items()},
                           "leakage": leakage_report(splits)}, indent=2))
         return 0
+
+    if args.command == "yolo":
+        from jersey_detect.yolo_baseline import SETTINGS, SMOKE_SETTINGS, run_yolo
+
+        smoke = {"batch": 4, "workers": 0, "n_boot": 20, "device": "cpu"} if args.smoke else {}
+        summary = run_yolo(args.data, args.out, seeds=args.seeds, time_budget_hours=args.hours,
+                           settings=SMOKE_SETTINGS if args.smoke else SETTINGS, **smoke)
+        print(json.dumps({"errors": summary["errors"], "done": sorted(summary["results"])}, indent=2))
+        return 1 if summary["errors"] else 0
 
     from jersey_detect.synthetic import make_dataset
 
