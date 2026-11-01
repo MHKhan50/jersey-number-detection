@@ -10,7 +10,7 @@ from jersey_detect.yolo_baseline import SETTINGS, write_data_yaml
 
 def test_settings_cover_pretraining_and_resolution():
     assert {(s.weights, s.imgsz) for s in SETTINGS} == {
-        ("yolov8n.pt", 640), ("yolov8n.pt", 256), ("yolov8n.yaml", 256)}
+        ("yolov8n.pt", 640), ("yolov8n.pt", 256), ("yolov8n.yaml", 256), ("yolov8n.yaml", 384)}
     assert len({s.slug for s in SETTINGS}) == len(SETTINGS)
 
 
@@ -34,3 +34,10 @@ def test_yolo_smoke_run_scores_with_our_evaluator(synthetic_root, tmp_path):
     assert {"val", "test", "train"} <= set(res)
     assert "ci95" in res["test"]
     assert "| YOLOv8n" in (out / "results.md").read_text()
+
+
+def test_unknown_only_setting_is_rejected(synthetic_root, tmp_path):
+    from jersey_detect.cli import main
+
+    with pytest.raises(SystemExit):
+        main(["yolo", "--data", str(synthetic_root), "--out", str(tmp_path), "--only", "nope"])

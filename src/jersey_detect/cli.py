@@ -87,6 +87,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--out", required=True)
     p.add_argument("--hours", type=float, default=9.5, help="stop starting new runs after this")
     p.add_argument("--seeds", type=int, nargs="+", default=[0, 1, 2])
+    p.add_argument("--only", nargs="+", metavar="SLUG",
+                   help="run only these settings, e.g. yolov8n_from_scratch_384_px")
     p.add_argument("--smoke", action="store_true", help="one tiny run, for testing the setup")
 
     p = sub.add_parser("ablate", help="ablation study of JerseyNet training choices")
@@ -176,8 +178,15 @@ def main(argv: list[str] | None = None) -> int:
         from jersey_detect.yolo_baseline import SETTINGS, SMOKE_SETTINGS, run_yolo
 
         smoke = {"batch": 4, "workers": 0, "n_boot": 20, "device": "cpu"} if args.smoke else {}
+        settings = SMOKE_SETTINGS if args.smoke else SETTINGS
+        if args.only:
+            unknown = set(args.only) - {s.slug for s in settings}
+            if unknown:
+                parser.error(f"unknown setting(s) {sorted(unknown)}; choose from "
+                             f"{[s.slug for s in settings]}")
+            settings = tuple(s for s in settings if s.slug in args.only)
         summary = run_yolo(args.data, args.out, seeds=args.seeds, time_budget_hours=args.hours,
-                           settings=SMOKE_SETTINGS if args.smoke else SETTINGS, **smoke)
+                           settings=settings, **smoke)
         print(json.dumps({"errors": summary["errors"], "done": sorted(summary["results"])}, indent=2))
         return 1 if summary["errors"] else 0
 

@@ -4,7 +4,8 @@ Three settings separate the two things a pretrained detector brings:
 
 * COCO-pretrained at 640 px: the earlier comparison (50 epochs);
 * COCO-pretrained at 256 px: same input size as JerseyNet, so only pretraining differs;
-* from scratch at 256 px: no pretraining either, trained as long as JerseyNet (140 epochs).
+* from scratch at 256 px: no pretraining either, trained as long as JerseyNet (140 epochs);
+* from scratch at 384 px: matches the input size of JerseyNet's best recipe from the ablation.
 
 Ultralytics selects ``best.pt`` on the validation split. Predictions on validation and test are
 then made with a low confidence threshold (0.001) and at most 100 boxes per image, the COCO
@@ -46,6 +47,7 @@ SETTINGS = (
     YoloSetting("YOLOv8n, COCO-pretrained, 640 px", "yolov8n.pt", 640, 50),
     YoloSetting("YOLOv8n, COCO-pretrained, 256 px", "yolov8n.pt", 256, 50),
     YoloSetting("YOLOv8n, from scratch, 256 px", "yolov8n.yaml", 256, 140),
+    YoloSetting("YOLOv8n, from scratch, 384 px", "yolov8n.yaml", 384, 140),
 )
 SMOKE_SETTINGS = (YoloSetting("YOLOv8n, from scratch, 64 px", "yolov8n.yaml", 64, 1),)
 
