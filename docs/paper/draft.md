@@ -220,6 +220,33 @@ result with an open diagnosis; the v1 code is preserved in the version 1.0.0 arc
 The v2 results support this: the same data and budget, with a spatial detector, give a
 ten-fold higher first-box IoU.
 
+## 7b. Ablation of the JerseyNet recipe
+
+Each variant changes the baseline recipe in one way and is trained once (seed 0); the variant
+with the best validation AP50:95 is then trained with seeds 1 and 2. The test split is not used
+for the choice.
+
+| Variant (seed 0) | Val AP50:95 | Test AP50:95 | Test AP50 | Test AP75 | Test first-box IoU |
+|---|---|---|---|---|---|
+| Baseline, 256 px | 0.259 | 0.235 [0.194, 0.290] | 0.474 | 0.205 | 0.463 |
+| + GIoU loss | 0.256 | 0.255 [0.212, 0.312] | 0.502 | 0.247 | 0.498 |
+| + mosaic (p = 0.5) | 0.288 | 0.273 [0.228, 0.331] | 0.539 | 0.248 | 0.504 |
+| 384 px input | 0.304 | 0.277 [0.234, 0.331] | 0.543 | 0.253 | 0.444 |
+| + mosaic + GIoU | 0.293 | 0.258 [0.212, 0.317] | 0.510 | 0.255 | 0.496 |
+| + mosaic + GIoU, 384 px | 0.337 | 0.303 [0.260, 0.358] | 0.595 | 0.272 | 0.522 |
+
+The combined recipe (mosaic, GIoU, 384 px), selected on validation, reaches a test AP50:95 of
+0.308 ± 0.005 over three seeds (AP50 0.597 ± 0.006, AP75 0.294 ± 0.028, first-box IoU
+0.520 ± 0.004), against 0.241 ± 0.006 for the baseline recipe: a 28% relative gain with no
+pretraining. The seed-0 baseline (0.235) reproduces the main run (0.234). Mosaic augmentation
+and the larger input each improve AP50:95 by about 0.04 on their own; GIoU alone changes little
+on validation. Single-seed differences between neighbouring variants lie within the bootstrap
+intervals, so only the combined result, repeated over seeds, is treated as established.
+
+The gain narrows the gap to the from-scratch YOLOv8n (0.352 at 256 px) but the two are no longer
+at the same input size; a YOLOv8n run at 384 px is needed for a matched comparison [PENDING].
+Training cost rises from about 22 to 65 minutes per seed on one T4.
+
 ## 8. Limitations
 
 * One dataset with 147 test images, all from ice hockey; intervals are wide, and transfer to

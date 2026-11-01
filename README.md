@@ -20,14 +20,15 @@ recogniser such as PARSeq) would run on.
 
 ## Results
 
-Test split (147 images, 234 boxes), all models scored with the same evaluator. Each row is the
-mean ± standard deviation over three seeds (0, 1, 2); both runs on a Kaggle T4 GPU.
+Test split (147 images, 234 boxes), all models scored with the same evaluator. Each detector row
+is the mean ± standard deviation over three seeds (0, 1, 2), trained on a Kaggle T4 GPU.
 
 | Model | Pretrained | Input | AP50:95 | AP50 | AP75 | First-box mean IoU | Train time per seed |
 |---|---|---|---|---|---|---|---|
 | Mean-box baseline | – | – | 0.000 | 0.000 | 0.000 | 0.016 | – |
 | v1 CNN regressor (seed 0) | no | 128 | 0.000 | 0.000 | 0.000 | 0.051 | < 1 min |
-| **JerseyNet** (this repository) | no | 256 | 0.241 ± 0.006 | 0.495 ± 0.004 | 0.227 ± 0.008 | 0.476 ± 0.023 | 22 min |
+| JerseyNet, baseline recipe | no | 256 | 0.241 ± 0.006 | 0.495 ± 0.004 | 0.227 ± 0.008 | 0.476 ± 0.023 | 22 min |
+| **JerseyNet** + mosaic + GIoU | no | 384 | **0.308 ± 0.005** | **0.597 ± 0.006** | 0.294 ± 0.028 | 0.520 ± 0.004 | 65 min |
 | YOLOv8n | no | 256 | 0.352 ± 0.013 | 0.629 ± 0.019 | 0.372 ± 0.005 | 0.544 ± 0.017 | 34 min |
 | YOLOv8n | COCO | 256 | 0.384 ± 0.003 | 0.675 ± 0.004 | 0.394 ± 0.017 | 0.576 ± 0.016 | 12 min |
 | YOLOv8n | COCO | 640 | 0.419 ± 0.012 | 0.701 ± 0.008 | 0.476 ± 0.034 | 0.590 ± 0.007 | 22 min |
@@ -36,7 +37,9 @@ Per-seed tables with 95% bootstrap intervals are in
 [`docs/experiments/2026-11-01_kaggle_t4/`](docs/experiments/2026-11-01_kaggle_t4/) (JerseyNet and
 baselines, commit `8a40029`) and
 [`docs/experiments/2026-11-01_kaggle_t4_yolo/`](docs/experiments/2026-11-01_kaggle_t4_yolo/)
-(YOLOv8n, [`notebooks/kaggle_yolo_baseline.ipynb`](notebooks/kaggle_yolo_baseline.ipynb)).
+(YOLOv8n, [`notebooks/kaggle_yolo_baseline.ipynb`](notebooks/kaggle_yolo_baseline.ipynb)) and
+[`docs/experiments/2026-11-01_kaggle_t4_ablation/`](docs/experiments/2026-11-01_kaggle_t4_ablation/)
+(ablation, [`notebooks/kaggle_ablation.ipynb`](notebooks/kaggle_ablation.ipynb)).
 JerseyNet training curves: [`docs/paper/figures/val_ap_curves.png`](docs/paper/figures/val_ap_curves.png).
 
 What the numbers say, read from the bottom row up (AP50:95):
@@ -49,6 +52,28 @@ So on this dataset COCO pretraining is worth little; most of the gap to YOLOv8n 
 detector design and its training recipe, which is where JerseyNet can be improved. JerseyNet
 still turns the v1 network, which was no better than a constant box, into a working detector
 (first-box IoU 0.05 → 0.48).
+
+### Ablation: closing part of the recipe gap
+
+Each variant changes one thing in the baseline recipe (seed 0). The variant with the best
+validation AP50:95 was then trained with seeds 1 and 2; the test split played no part in the choice.
+
+| Variant (seed 0) | Val AP50:95 | Test AP50:95 | Test AP50 |
+|---|---|---|---|
+| Baseline (256 px) | 0.259 | 0.235 [0.194, 0.290] | 0.474 |
+| + GIoU box loss | 0.256 | 0.255 [0.212, 0.312] | 0.502 |
+| + mosaic augmentation | 0.288 | 0.273 [0.228, 0.331] | 0.539 |
+| 384 px input | 0.304 | 0.277 [0.234, 0.331] | 0.543 |
+| + mosaic + GIoU | 0.293 | 0.258 [0.212, 0.317] | 0.510 |
+| + mosaic + GIoU, 384 px | **0.337** | **0.303 [0.260, 0.358]** | **0.595** |
+
+Over three seeds the combined recipe reaches 0.308 ± 0.005 AP50:95, up from 0.241 ± 0.006: a
+28% relative gain from the training recipe and input size alone, still without pretraining.
+Mosaic and a larger input each help on their own; GIoU alone changes little. Single-seed
+differences between neighbouring rows are within the bootstrap intervals, so only the combined
+result, repeated over three seeds, should be read as firm. The settings are in
+[`configs/jersey_net_best.json`](configs/jersey_net_best.json). JerseyNet at 384 px is not
+directly comparable with YOLOv8n at 256 px; a YOLOv8n run at 384 px would be the matching row.
 
 The YOLOv8n 640 px seed-0 run reproduces the earlier first-box result exactly (0.581, 68.5%),
 and the mean-box baseline matches its earlier value (0.016), which cross-checks the evaluator.
