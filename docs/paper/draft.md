@@ -1,4 +1,4 @@
-# Localising jersey numbers without pretraining: a from-scratch anchor-free detector versus a fine-tuned YOLOv8n
+# Localising jersey numbers without pretraining: how much of the gap to YOLOv8n is pretraining?
 
 Muzammal Hussain
 
@@ -181,9 +181,9 @@ Per-seed test AP50:95 is 0.234, 0.246 and 0.242 (validation 0.247, 0.262, 0.262)
 re-trained v1 regressor (0.051) reproduces the earlier 0.044 within its interval, and the
 mean-box baseline matches the earlier 0.016 exactly, which cross-checks the new evaluator.
 
-JerseyNet closes most of the gap between the v1 regressor and the pretrained detector on the
-first-box metric (0.051 → 0.476, against 0.581). The remaining difference mixes the effects of
-pretraining and input resolution (256 against 640); separating them is left to the ablations.
+On the first-box metric JerseyNet moves from the v1 regressor's 0.051 to 0.476, against 0.590
+for the pretrained YOLOv8n at 640 px; the decomposition above shows how the remaining gap splits
+between resolution, pretraining and design.
 Training is short: each seed ran 140 epochs in about 22 minutes on one T4 GPU. Validation
 AP50:95 reaches about 0.23 by epoch 25 and changes little after epoch 90 (Figure 1); the selected
 checkpoints come from epochs 115, 95 and 90. Validation scores are 0.01 to 0.02 AP above test,
