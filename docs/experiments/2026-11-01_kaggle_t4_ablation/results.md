@@ -24,4 +24,4 @@ Best variant on validation (seed 0): **mosaic+giou+384px**
 | ap75 | 0.294 | 0.028 |
 | first_box_mean_iou | 0.520 | 0.004 |
 
-Run: Kaggle, GPU T4 x2 (one GPU used), notebook `notebooks/kaggle_ablation.ipynb`, 6 h 14 min in total.
+Run: Kaggle, GPU T4 x2 (one GPU used), notebook `notebooks/kaggle_ablation.ipynb`, 6.2 hours in total, commit `3158b62`. Full per-run metrics are in `summary.json`.
