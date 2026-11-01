@@ -43,7 +43,7 @@ def _table(summary: dict) -> str:
             "| Variant | Seed | Val AP50:95 | Test AP50:95 | Test AP50 | Test AP75 "
             "| Test first-box IoU | Minutes |",
             "|---|---|---|---|---|---|---|---|"]
-    for key, res in summary["runs"].items():
+    for res in summary["runs"].values():
         v, t = res["val"], res["test"]
         ci = t.get("ci95", {}).get("ap50_95")
         test_ap = f"{t['ap50_95']:.3f}" + (f" [{ci[0]:.3f}, {ci[1]:.3f}]" if ci else "")

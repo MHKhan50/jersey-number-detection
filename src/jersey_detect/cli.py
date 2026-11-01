@@ -160,7 +160,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command == "ablate":
-        from jersey_detect.ablation import SMOKE_VARIANTS, VARIANTS, run_ablation
+        from jersey_detect.ablation import SMOKE_VARIANTS, run_ablation
 
         base = _load_json(args.config)
         kwargs = {}
