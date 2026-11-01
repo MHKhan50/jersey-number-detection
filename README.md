@@ -28,11 +28,23 @@ JerseyNet is the mean ± standard deviation over three seeds. Run on a Kaggle T4
 |---|---|---|---|---|---|
 | Mean-box baseline | – | 0.000 | 0.000 | 0.016 [0.008, 0.025] | 0.0% |
 | v1 CNN regressor (15 epochs) | no | 0.000 | 0.000 [0.000, 0.002] | 0.051 [0.033, 0.069] | 0.0% |
-| **JerseyNet** (3 seeds) | no | **0.241 ± 0.006** | **0.495 ± 0.004** | **0.476 ± 0.023** | 59–63% |
+| **JerseyNet** (3 seeds) | no | **0.241 ± 0.006** | **0.495 ± 0.004** | **0.476 ± 0.023** | 56–63% |
 | YOLOv8n, fine-tuned 50 epochs ¹ | COCO | – | – | 0.581 | 68.5% |
 
-Per seed (test): AP50:95 0.234, 0.246, 0.242; AP50 0.491, 0.496, 0.498; first-box mean IoU
-0.454, 0.473, 0.500. Validation AP50:95 was 0.247, 0.262, 0.262.
+Per seed, test split:
+
+| Seed | Best epoch (val) | AP50:95 | AP50 | AP75 | AR@100 | First-box mean IoU | First-box IoU ≥ 0.5 |
+|---|---|---|---|---|---|---|---|
+| 0 | 115 | 0.234 [0.195, 0.288] | 0.491 [0.417, 0.580] | 0.219 | 0.360 | 0.454 [0.390, 0.522] | 56.2% |
+| 1 | 95 | 0.246 [0.203, 0.302] | 0.496 [0.418, 0.583] | 0.235 | 0.382 | 0.473 [0.407, 0.539] | 59.2% |
+| 2 | 90 | 0.242 [0.201, 0.298] | 0.498 [0.424, 0.586] | 0.227 | 0.371 | 0.500 [0.438, 0.566] | 63.1% |
+
+Each seed trained for 140 epochs in about 22 minutes on one T4 (about 9 s per epoch); the whole
+pipeline took 1.2 hours. Validation AP50:95 reaches about 0.23 by epoch 25 and gains little after
+epoch 90 ([training curves](docs/paper/figures/val_ap_curves.png)). The complete outputs of this
+run (summary, per-split tables, dataset and duplicate reports, environment and log) are in
+[`docs/results/2026-11-01_kaggle_t4/`](docs/results/2026-11-01_kaggle_t4/); it used commit
+`8a40029`.
 
 ¹ Measured earlier with the first-box protocol only; it will be re-scored with
 `jersey-detect score` so that every row uses the same evaluator.
