@@ -18,7 +18,9 @@ reaches AP50:95 of 0.241 ± 0.006 (AP50 0.495), turning the v1 network into a wo
 (first-box IoU 0.051 → 0.476). YOLOv8n reaches 0.352 from scratch and 0.384 from COCO weights at
 the same 256 px input, and 0.419 at 640 px. On this task COCO pretraining adds about 0.03 AP and
 higher resolution another 0.035, while the detector design and training recipe account for 0.11:
-the gap to a modern detector is mainly an architecture and recipe gap, not a pretraining gap.
+the gap to a modern detector is mainly an architecture and recipe gap, not a pretraining gap. An ablation
+confirms this: mosaic augmentation, a GIoU box loss and a 384 px input raise JerseyNet to
+0.308 ± 0.005 AP50:95, still without pretraining.
 
 ## 1. Introduction
 
