@@ -20,17 +20,34 @@ recogniser such as PARSeq) would run on.
 
 ## Results
 
-**Status:** the v2 runs are in progress. The table will be filled from `results/results.md`
-once the Kaggle run has finished. No v2 numbers are reported until then.
+Test split (147 images, 234 boxes). Brackets are 95% bootstrap intervals over images.
+JerseyNet is the mean ± standard deviation over three seeds. Run on a Kaggle T4 GPU with
+[`configs/kaggle.json`](configs/kaggle.json).
 
-The v1 numbers below were measured with the old protocol (first annotated box only, labelled
-images only) and are kept for reference.
+| Model | Pretrained | AP50:95 | AP50 | First-box mean IoU | First-box IoU ≥ 0.5 |
+|---|---|---|---|---|---|
+| Mean-box baseline | – | 0.000 | 0.000 | 0.016 [0.008, 0.025] | 0.0% |
+| v1 CNN regressor (15 epochs) | no | 0.000 | 0.000 [0.000, 0.002] | 0.051 [0.033, 0.069] | 0.0% |
+| **JerseyNet** (3 seeds) | no | **0.241 ± 0.006** | **0.495 ± 0.004** | **0.476 ± 0.023** | 59–63% |
+| YOLOv8n, fine-tuned 50 epochs ¹ | COCO | – | – | 0.581 | 68.5% |
 
-| Model (v1 protocol) | Test mean IoU | Test IoU ≥ 0.5 |
-|---|---|---|
-| Mean-box baseline | 0.016 | – |
-| v1 CNN regressor, from scratch, 15 epochs | 0.044 | – |
-| YOLOv8n, COCO-pretrained, fine-tuned 50 epochs | 0.581 | 68.5% |
+Per seed (test): AP50:95 0.234, 0.246, 0.242; AP50 0.491, 0.496, 0.498; first-box mean IoU
+0.454, 0.473, 0.500. Validation AP50:95 was 0.247, 0.262, 0.262.
+
+¹ Measured earlier with the first-box protocol only; it will be re-scored with
+`jersey-detect score` so that every row uses the same evaluator.
+
+What this shows:
+
+* The v1 regressor is no better than predicting a constant box. Its first-box IoU (0.051)
+  reproduces the earlier 0.044 within noise, and the mean-box result (0.016) matches exactly,
+  which also checks the new evaluator against the old one.
+* JerseyNet, with no pretraining, raises first-box IoU from 0.05 to 0.48 and reaches AP50 of
+  about 0.50. Seeds agree closely (standard deviation under 0.01 AP).
+* The COCO-pretrained YOLOv8n is still ahead on the shared metric (0.581 against 0.476), so a
+  gap remains; part of it is pretraining and part is input size (640 against 256).
+
+Full tables, per-seed metrics and test predictions are written to `results/` by the pipeline.
 
 ## Dataset
 

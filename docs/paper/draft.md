@@ -13,7 +13,9 @@ features, reached a test mean IoU of 0.044 against 0.016 for a constant mean-box
 0.581 for the fine-tuned YOLOv8n. We replace it with JerseyNet, a CenterNet-style detector with a
 residual backbone and a feature pyramid fused to stride 4, trained from scratch. All models are
 scored with COCO-style AP over every annotated box, plus the earlier first-box IoU, on the same
-public split, with bootstrap intervals and three seeds. [PENDING: JerseyNet results]
+public split, with bootstrap intervals and three seeds. On the test split JerseyNet reaches
+AP50:95 of 0.241 ± 0.006 and AP50 of 0.495 ± 0.004, and raises first-box IoU from 0.051 for the
+v1 regressor to 0.476 ± 0.023, against 0.581 for the pretrained YOLOv8n.
 
 ## 1. Introduction
 
@@ -138,7 +140,24 @@ v1 protocol, test split (130 scored images), from the earlier runs:
 | v1 CNN regressor (15 epochs) | 0.044 | [PENDING] |
 | YOLOv8n (fine-tuned, 50 epochs) | 0.581 | 68.5% |
 
-Full protocol, test split: [PENDING: table from `results/results.md`]
+Full protocol, test split (147 images, 234 boxes), with 95% bootstrap intervals over images.
+JerseyNet is the mean ± standard deviation over seeds 0, 1 and 2.
+
+| Model | AP50:95 | AP50 | First-box mean IoU | First-box IoU ≥ 0.5 |
+|---|---|---|---|---|
+| Mean-box baseline | 0.000 | 0.000 | 0.016 [0.008, 0.025] | 0.0% |
+| v1 CNN regressor (15 epochs) | 0.000 | 0.000 [0.000, 0.002] | 0.051 [0.033, 0.069] | 0.0% |
+| JerseyNet (from scratch) | 0.241 ± 0.006 | 0.495 ± 0.004 | 0.476 ± 0.023 | 59.2–63.1% |
+| YOLOv8n (COCO, fine-tuned) | [PENDING] | [PENDING] | 0.581 | 68.5% |
+
+Per-seed test AP50:95 is 0.234, 0.246 and 0.242 (validation 0.247, 0.262, 0.262). The
+re-trained v1 regressor (0.051) reproduces the earlier 0.044 within its interval, and the
+mean-box baseline matches the earlier 0.016 exactly, which cross-checks the new evaluator.
+
+JerseyNet closes most of the gap between the v1 regressor and the pretrained detector on the
+first-box metric (0.051 → 0.476, against 0.581). The remaining difference mixes the effects of
+pretraining and input resolution (256 against 640); separating them is left to the ablations.
+[PENDING: YOLOv8n under the full protocol; AP75 and AR per model from `summary.json`.]
 
 ## 7. Analysis of the v1 regressor
 
@@ -157,7 +176,8 @@ model can output only one box although images hold up to nine numbers, and the 1
 leaves the smallest numbers about four pixels wide. JerseyNet addresses each of these (a spatial
 heatmap, any number of outputs, stride-4 features on a 2× upsampled input). The GIoU collapse is reported as a negative
 result with an open diagnosis; the v1 code is preserved in the version 1.0.0 archive.
-[PENDING: confirm with the v2 results.]
+The v2 results support this: the same data and budget, with a spatial detector, give a
+ten-fold higher first-box IoU.
 
 ## 8. Limitations
 
