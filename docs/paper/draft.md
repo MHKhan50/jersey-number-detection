@@ -76,7 +76,9 @@ We use the Roboflow export `jersey-2` (workspace `muzammal-masmatixinnovations-c
 | Validation | 301 | 263 | 485 | 6 |
 | Test | 147 | 130 | 234 | 9 |
 
-All images are 128 × 128 pixels. The median box side is about 8% of the image side (about 10
+The images are ice-hockey scenes, mostly NHL broadcast frames and press photos, ranging from
+player close-ups to wide views of the rink; all are 128 × 128 pixels. Results may not transfer to
+other sports, where numbers, kits and camera views differ. The median box side is about 8% of the image side (about 10
 pixels), and the 10th percentile is about 3% (4 pixels).
 
 Images without a label, or with an empty label file, are kept and act as negatives.
@@ -220,7 +222,8 @@ ten-fold higher first-box IoU.
 
 ## 8. Limitations
 
-* One dataset with 147 test images; intervals are wide.
+* One dataset with 147 test images, all from ice hockey; intervals are wide, and transfer to
+  other sports is untested.
 * Frames from one match may sit in different splits; we measure but do not remove this.
 * Localisation only; the digits are not read.
 * YOLOv8n uses its own default recipe (augmentation, losses, schedule); JerseyNet's recipe is

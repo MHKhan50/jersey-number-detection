@@ -55,8 +55,10 @@ and the mean-box baseline matches its earlier value (0.016), which cross-checks 
 
 ## Dataset
 
-Roboflow export `jersey-2` (one class, `number`, YOLO format, public domain). All images are
-128×128 pixels.
+Roboflow export `jersey-2` (one class, `number`, YOLO format). The images are ice-hockey scenes,
+mostly NHL broadcast frames and press photos, from close-ups to wide rink views; all are
+128×128 pixels. Roboflow lists the export as public domain, but the underlying photographs may
+carry their own rights, so the dataset is used for research only and is not redistributed here.
 
 | Split | Images | Labelled images | Boxes | Max boxes per image |
 |---|---|---|---|---|
