@@ -46,8 +46,10 @@ run (summary, per-split tables, dataset and duplicate reports, environment and l
 [`docs/experiments/2026-11-01_kaggle_t4/`](docs/experiments/2026-11-01_kaggle_t4/); it used commit
 `8a40029`.
 
-¹ Measured earlier with the first-box protocol only; it will be re-scored with
-`jersey-detect score` so that every row uses the same evaluator.
+¹ Measured earlier with the first-box protocol only. The YOLOv8n baselines are being re-run with
+[`notebooks/kaggle_yolo_baseline.ipynb`](notebooks/kaggle_yolo_baseline.ipynb), which trains
+YOLOv8n COCO-pretrained at 640 px and 256 px and from scratch at 256 px (three seeds each) and
+scores them with the same evaluator. Ultralytics (AGPL-3.0) is installed only for that notebook.
 
 What this shows:
 
