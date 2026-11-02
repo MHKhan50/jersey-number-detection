@@ -30,6 +30,7 @@ is the mean ± standard deviation over three seeds (0, 1, 2), trained on a Kaggl
 | JerseyNet, baseline recipe | no | 256 | 0.241 ± 0.006 | 0.495 ± 0.004 | 0.227 ± 0.008 | 0.476 ± 0.023 | 22 min |
 | **JerseyNet** + mosaic + GIoU | no | 384 | **0.308 ± 0.005** | **0.597 ± 0.006** | 0.294 ± 0.028 | 0.520 ± 0.004 | 65 min |
 | YOLOv8n | no | 256 | 0.352 ± 0.013 | 0.629 ± 0.019 | 0.372 ± 0.005 | 0.544 ± 0.017 | 34 min |
+| YOLOv8n | no | 384 | 0.366 ± 0.005 | 0.649 ± 0.003 | 0.371 ± 0.003 | 0.554 ± 0.016 | 33 min |
 | YOLOv8n | COCO | 256 | 0.384 ± 0.003 | 0.675 ± 0.004 | 0.394 ± 0.017 | 0.576 ± 0.016 | 12 min |
 | YOLOv8n | COCO | 640 | 0.419 ± 0.012 | 0.701 ± 0.008 | 0.476 ± 0.034 | 0.590 ± 0.007 | 22 min |
 
@@ -39,7 +40,9 @@ baselines, commit `8a40029`) and
 [`docs/experiments/2026-11-01_kaggle_t4_yolo/`](docs/experiments/2026-11-01_kaggle_t4_yolo/)
 (YOLOv8n, [`notebooks/kaggle_yolo_baseline.ipynb`](notebooks/kaggle_yolo_baseline.ipynb)) and
 [`docs/experiments/2026-11-01_kaggle_t4_ablation/`](docs/experiments/2026-11-01_kaggle_t4_ablation/)
-(ablation, [`notebooks/kaggle_ablation.ipynb`](notebooks/kaggle_ablation.ipynb)).
+(ablation, [`notebooks/kaggle_ablation.ipynb`](notebooks/kaggle_ablation.ipynb)) and
+[`docs/experiments/2026-11-02_kaggle_t4_yolo384/`](docs/experiments/2026-11-02_kaggle_t4_yolo384/)
+(YOLOv8n from scratch at 384 px).
 JerseyNet training curves: [`docs/paper/figures/val_ap_curves.png`](docs/paper/figures/val_ap_curves.png).
 
 What the numbers say, read from the bottom row up (AP50:95):
@@ -72,8 +75,13 @@ Over three seeds the combined recipe reaches 0.308 ± 0.005 AP50:95, up from 0.2
 Mosaic and a larger input each help on their own; GIoU alone changes little. Single-seed
 differences between neighbouring rows are within the bootstrap intervals, so only the combined
 result, repeated over three seeds, should be read as firm. The settings are in
-[`configs/jersey_net_best.json`](configs/jersey_net_best.json). JerseyNet at 384 px is not
-directly comparable with YOLOv8n at 256 px; a YOLOv8n run at 384 px would be the matching row.
+[`configs/jersey_net_best.json`](configs/jersey_net_best.json).
+
+At the matched input size of 384 px, both trained from scratch, YOLOv8n reaches 0.366 ± 0.005
+against JerseyNet's 0.308 ± 0.005. The ablation therefore halves the design-and-recipe gap,
+from 0.111 at 256 px (baseline recipes) to 0.058 at 384 px. YOLOv8n itself gains only 0.014
+from the larger input, while JerseyNet gains much more from it, which fits its single
+high-resolution head being limited by small objects at 256 px.
 
 The YOLOv8n 640 px seed-0 run reproduces the earlier first-box result exactly (0.581, 68.5%),
 and the mean-box baseline matches its earlier value (0.016), which cross-checks the evaluator.

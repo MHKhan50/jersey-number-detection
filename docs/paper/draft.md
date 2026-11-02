@@ -20,7 +20,8 @@ the same 256 px input, and 0.419 at 640 px. On this task COCO pretraining adds a
 higher resolution another 0.035, while the detector design and training recipe account for 0.11:
 the gap to a modern detector is mainly an architecture and recipe gap, not a pretraining gap. An ablation
 confirms this: mosaic augmentation, a GIoU box loss and a 384 px input raise JerseyNet to
-0.308 ± 0.005 AP50:95, still without pretraining.
+0.308 ± 0.005 AP50:95, still without pretraining, which halves the gap to a from-scratch YOLOv8n
+at the same 384 px input (0.366 ± 0.005).
 
 ## 1. Introduction
 
@@ -164,6 +165,7 @@ JerseyNet is the mean ± standard deviation over seeds 0, 1 and 2.
 | v1 CNN regressor | no | 128 | 0.000 | 0.000 [0.000, 0.002] | 0.000 | 0.001 | 0.051 [0.033, 0.069] | 0.0% |
 | JerseyNet | no | 256 | 0.241 ± 0.006 | 0.495 ± 0.004 | 0.227 ± 0.008 | 0.371 ± 0.011 | 0.476 ± 0.023 | 59.5 ± 3.5% |
 | YOLOv8n | no | 256 | 0.352 ± 0.013 | 0.629 ± 0.019 | 0.372 ± 0.005 | 0.470 ± 0.013 | 0.544 ± 0.017 | 66.7 ± 1.9% |
+| YOLOv8n | no | 384 | 0.366 ± 0.005 | 0.649 ± 0.003 | 0.371 ± 0.003 | 0.488 ± 0.006 | 0.554 ± 0.016 | 67.7 ± 2.0% |
 | YOLOv8n | COCO | 256 | 0.384 ± 0.003 | 0.675 ± 0.004 | 0.394 ± 0.017 | 0.489 ± 0.004 | 0.576 ± 0.016 | 71.0 ± 1.9% |
 | YOLOv8n | COCO | 640 | 0.419 ± 0.012 | 0.701 ± 0.008 | 0.476 ± 0.034 | 0.538 ± 0.012 | 0.590 ± 0.007 | 70.0 ± 1.5% |
 
@@ -245,9 +247,14 @@ and the larger input each improve AP50:95 by about 0.04 on their own; GIoU alone
 on validation. Single-seed differences between neighbouring variants lie within the bootstrap
 intervals, so only the combined result, repeated over seeds, is treated as established.
 
-The gain narrows the gap to the from-scratch YOLOv8n (0.352 at 256 px) but the two are no longer
-at the same input size; a YOLOv8n run at 384 px is needed for a matched comparison [PENDING].
-Training cost rises from about 22 to 65 minutes per seed on one T4.
+For a matched comparison, YOLOv8n was also trained from scratch at 384 px (three seeds, same
+140 epochs): AP50:95 0.366 ± 0.005, AP50 0.649 ± 0.003, AP75 0.371 ± 0.003, AR 0.488 ± 0.006
+and first-box IoU 0.554 ± 0.016. At equal input size and with no pretraining on either side,
+the gap between the two systems is therefore 0.058 AP50:95, about half of the 0.111 measured
+with the baseline recipes at 256 px. YOLOv8n gains only 0.014 from the larger input, whereas
+JerseyNet gains about 0.04 from it alone, consistent with its single stride-4 head being the
+part most limited by the smallest numbers. Training cost rises from about 22 to 65 minutes per
+seed for JerseyNet on one T4; YOLOv8n at 384 px takes about 33 minutes.
 
 ## 8. Limitations
 
