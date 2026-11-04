@@ -5,7 +5,14 @@ Three settings separate the two things a pretrained detector brings:
 * COCO-pretrained at 640 px: the earlier comparison (50 epochs);
 * COCO-pretrained at 256 px: same input size as JerseyNet, so only pretraining differs;
 * from scratch at 256 px: no pretraining either, trained as long as JerseyNet (140 epochs);
-* from scratch at 384 px: matches the input size of JerseyNet's best recipe from the ablation.
+* from scratch at 384 px: matches the input size of JerseyNet's best recipe from the ablation;
+* from scratch at 256 px with JerseyNet's augmentation: no mosaic, no horizontal flip (which
+  mirrors the digits), random scale of about 0.65 to 1.35 and colour jitter of 30%, so the
+  comparison with JerseyNet no longer differs in augmentation.
+
+``train_fraction`` trains on a fixed subset of the training split (see
+:func:`jersey_detect.data.train_subset`) for the same number of optimisation steps as the full
+run: epochs, warm-up, patience and the final no-mosaic epochs are divided by the fraction.
 
 Ultralytics selects ``best.pt`` on the validation split. Predictions on validation and test are
 then made with a low confidence threshold (0.001) and at most 100 boxes per image, the COCO
@@ -27,8 +34,16 @@ from pathlib import Path
 
 import numpy as np
 
-from jersey_detect.data import find_split_dirs, load_dataset
-from jersey_detect.metrics import all_metrics, bootstrap_ci
+from jersey_detect.data import find_split_dirs, load_dataset, train_subset
+from jersey_detect.metrics import all_metrics, bootstrap_ci, size_metrics
+
+# Ultralytics defaults that are given in epochs and are rescaled for subset runs.
+_DEFAULT_PATIENCE, _DEFAULT_WARMUP, _DEFAULT_CLOSE_MOSAIC = 100, 3.0, 10
+
+# JerseyNet's augmentation expressed in Ultralytics' settings.
+JERSEYNET_AUGMENTATION = (("mosaic", 0.0), ("close_mosaic", 0), ("mixup", 0.0), ("fliplr", 0.0),
+                          ("scale", 0.35), ("translate", 0.1), ("hsv_h", 0.0), ("hsv_s", 0.3),
+                          ("hsv_v", 0.3))
 
 
 @dataclass(frozen=True)
@@ -37,6 +52,7 @@ class YoloSetting:
     weights: str  # "yolov8n.pt" (COCO-pretrained) or "yolov8n.yaml" (random initialisation)
     imgsz: int
     epochs: int
+    extra: tuple = ()  # further Ultralytics training arguments as (key, value) pairs
 
     @property
     def slug(self) -> str:
@@ -48,17 +64,42 @@ SETTINGS = (
     YoloSetting("YOLOv8n, COCO-pretrained, 256 px", "yolov8n.pt", 256, 50),
     YoloSetting("YOLOv8n, from scratch, 256 px", "yolov8n.yaml", 256, 140),
     YoloSetting("YOLOv8n, from scratch, 384 px", "yolov8n.yaml", 384, 140),
+    YoloSetting("YOLOv8n, from scratch, 256 px, JerseyNet augmentation", "yolov8n.yaml", 256, 140,
+                JERSEYNET_AUGMENTATION),
 )
+
+
+def scaled_train_args(setting: YoloSetting, fraction: float) -> dict:
+    """Epoch-based training arguments for a run on ``fraction`` of the training images."""
+    extra = dict(setting.extra)
+    if fraction == 1:
+        return {"epochs": setting.epochs, **extra}
+    args = {"epochs": int(round(setting.epochs / fraction)),
+            "patience": int(round(_DEFAULT_PATIENCE / fraction)),
+            "warmup_epochs": _DEFAULT_WARMUP / fraction,
+            "close_mosaic": int(round(_DEFAULT_CLOSE_MOSAIC / fraction))}
+    args.update(extra)
+    if "close_mosaic" in extra:
+        args["close_mosaic"] = int(round(extra["close_mosaic"] / fraction))
+    return args
 SMOKE_SETTINGS = (YoloSetting("YOLOv8n, from scratch, 64 px", "yolov8n.yaml", 64, 1),)
 
 
-def write_data_yaml(data_root: str, path: Path) -> Path:
-    """Ultralytics dataset file with absolute split paths (the data folder may be read-only)."""
+def write_data_yaml(data_root: str, path: Path, train_records=None) -> Path:
+    """Ultralytics dataset file with absolute split paths (the data folder may be read-only).
+
+    With ``train_records``, the training split is a list file of those images; Ultralytics finds
+    each label by replacing ``images`` with ``labels`` in the image path.
+    """
     splits = find_split_dirs(data_root)
     path.parent.mkdir(parents=True, exist_ok=True)
+    train = splits["train"] / "images"
+    if train_records is not None:
+        train = path.with_name(path.stem + "_train.txt")
+        train.write_text("\n".join(str(Path(r.path).resolve()) for r in train_records) + "\n")
     path.write_text(
         "\n".join([
-            f"train: {splits['train'] / 'images'}",
+            f"train: {train}",
             f"val: {splits['val'] / 'images'}",
             f"test: {splits['test'] / 'images'}",
             "nc: 1",
@@ -87,6 +128,7 @@ def predict(model, records, imgsz: int, batch: int = 32):
 def _score(records, dets, scores, n_boot: int) -> dict:
     gts = [r.boxes for r in records]
     m = all_metrics(gts, dets, scores)
+    m["by_size"] = size_metrics(gts, dets, scores)
     if n_boot:
         m["ci95"] = bootstrap_ci(gts, dets, scores, n_boot=n_boot)
     return m
@@ -122,14 +164,18 @@ def _table(summary: dict) -> str:
 
 def run_yolo(data_root: str, out_dir: str, seeds=(0, 1, 2), time_budget_hours: float = 9.5,
              settings=SETTINGS, batch: int = 16, workers: int = 4, n_boot: int = 1000,
-             device=None, log=print) -> dict:
+             device=None, log=print, train_fraction: float = 1.0, subset_seed: int = 0) -> dict:
     from ultralytics import YOLO  # imported here: optional dependency
 
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     started = time.time()
     splits = load_dataset(data_root)
-    data_yaml = write_data_yaml(data_root, out / "data.yaml")
+    subset = None
+    if train_fraction < 1:
+        subset = train_subset(splits["train"], train_fraction, subset_seed)
+        log(f"training images: {len(subset)} of {len(splits['train'])} (fraction {train_fraction})")
+    data_yaml = write_data_yaml(data_root, out / "data.yaml", subset)
     summary_path = out / "summary.json"
     summary = json.loads(summary_path.read_text()) if summary_path.exists() else {}
     summary.setdefault("results", {})
@@ -171,16 +217,19 @@ def run_yolo(data_root: str, out_dir: str, seeds=(0, 1, 2), time_budget_hours: f
                 if run_dir.exists():
                     shutil.rmtree(run_dir)  # an unfinished earlier attempt
                 model = YOLO(s.weights)
-                kwargs = dict(data=str(data_yaml), epochs=s.epochs, imgsz=s.imgsz, batch=batch,
+                train_args = scaled_train_args(s, train_fraction)
+                kwargs = dict(data=str(data_yaml), imgsz=s.imgsz, batch=batch,
                               seed=seed, deterministic=True, workers=workers, project=str(out / "runs"),
-                              name=run_dir.name, exist_ok=True, plots=False, verbose=False)
+                              name=run_dir.name, exist_ok=True, plots=False, verbose=False, **train_args)
                 if device is not None:
                     kwargs["device"] = device
                 model.train(**kwargs)
                 best = run_dir / "weights" / "best.pt"
                 trained = YOLO(str(best))
-                res = {"train": {"weights": s.weights, "imgsz": s.imgsz, "epochs": s.epochs,
-                                 "batch": batch, "minutes": round((time.time() - t0) / 60, 1)}}
+                res = {"train": {"weights": s.weights, "imgsz": s.imgsz, "batch": batch,
+                                 "train_fraction": train_fraction,
+                                 "train_images": len(subset) if subset is not None else len(splits["train"]),
+                                 **train_args, "minutes": round((time.time() - t0) / 60, 1)}}
                 for split in ("val", "test"):
                     d, sc = predict(trained, splits[split], s.imgsz)
                     res[split] = _score(splits[split], d, sc, n_boot if split == "test" else 0)

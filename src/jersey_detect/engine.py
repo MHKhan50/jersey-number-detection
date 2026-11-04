@@ -23,7 +23,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from jersey_detect.data import ImageRecord, load_dataset
+from jersey_detect.data import ImageRecord, load_dataset, train_subset
 from jersey_detect.dataset import EvalDataset, TrainDataset
 from jersey_detect.detector import JerseyNet, decode, detection_loss
 from jersey_detect.metrics import all_metrics
@@ -32,7 +32,7 @@ from jersey_detect.transforms import Letterbox
 # Settings that change what is being trained. A checkpoint is only resumed if these match.
 _RUN_IDENTITY = ("image_size", "epochs", "batch_size", "lr", "weight_decay", "seed", "hflip",
                  "mosaic", "giou_weight",
-                 "scale_min", "scale_max", "warmup_epochs")
+                 "scale_min", "scale_max", "warmup_epochs", "train_fraction", "subset_seed")
 
 
 @dataclass
@@ -60,6 +60,8 @@ class DetectorConfig:
     scale_max: float = 1.3
     max_objects: int = 64
     top_k: int = 100
+    train_fraction: float = 1.0  # share of the training split used (data-efficiency study)
+    subset_seed: int = 0  # fixes which images form the subset, independently of ``seed``
     resume: bool = True
     device: str = "auto"
 
@@ -180,6 +182,8 @@ def train_detector(cfg: DetectorConfig, log=print) -> dict:
         torch.backends.cudnn.benchmark = True
 
     splits = load_dataset(cfg.data_root)
+    splits["train"] = train_subset(splits["train"], cfg.train_fraction, cfg.subset_seed)
+    log(f"training images: {len(splits['train'])} (fraction {cfg.train_fraction})")
     train_set = TrainDataset(splits["train"], cfg.image_size, cfg.max_objects,
                              (cfg.scale_min, cfg.scale_max), cfg.hflip, cfg.seed, cfg.mosaic)
     batch_size = min(cfg.batch_size, len(train_set))

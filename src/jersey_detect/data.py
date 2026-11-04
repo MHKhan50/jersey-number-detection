@@ -96,6 +96,21 @@ def load_dataset(root: str | os.PathLike) -> dict[str, list[ImageRecord]]:
     return {key: load_split(path) for key, path in find_split_dirs(root).items()}
 
 
+def train_subset(records: list[ImageRecord], fraction: float, subset_seed: int = 0) -> list[ImageRecord]:
+    """The first ``ceil(fraction * N)`` images of one fixed shuffle of the split.
+
+    The shuffle depends only on ``subset_seed``, so smaller subsets are contained in larger
+    ones and every model and training seed sees the same images for a given fraction.
+    """
+    if not 0 < fraction <= 1:
+        raise ValueError(f"fraction must be in (0, 1], got {fraction}")
+    if fraction == 1:
+        return list(records)
+    order = np.random.default_rng(subset_seed).permutation(len(records))
+    n = max(1, int(np.ceil(fraction * len(records))))
+    return [records[i] for i in sorted(order[:n])]
+
+
 def split_stats(records: list[ImageRecord]) -> dict:
     """Counts and box-size statistics used in the dataset table of the paper."""
     boxes = [r.boxes for r in records if r.labelled]

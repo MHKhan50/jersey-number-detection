@@ -98,6 +98,20 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--hours", type=float, default=10.0)
     p.add_argument("--smoke", action="store_true", help="tiny settings, for testing the setup")
 
+    p = sub.add_parser("study", help="data-efficiency study and augmentation-matched YOLOv8n")
+    p.add_argument("--data", required=True)
+    p.add_argument("--out", required=True)
+    p.add_argument("--config", help="JSON with the JerseyNet DetectorConfig settings")
+    p.add_argument("--hours", type=float, default=10.0, help="no new run starts after this")
+    p.add_argument("--seeds", type=int, nargs="+", default=[0, 1, 2])
+    p.add_argument("--fractions", type=float, nargs="+", default=[0.1, 0.25])
+    p.add_argument("--smoke", action="store_true", help="tiny settings, for testing the setup")
+
+    p = sub.add_parser("rescore", help="re-score saved checkpoints on test, with AP by number size")
+    p.add_argument("--data", required=True)
+    p.add_argument("--checkpoints", nargs="+", required=True, help="folders searched for best.pt")
+    p.add_argument("--out", required=True)
+
     p = sub.add_parser("synthetic", help="write a small synthetic dataset for smoke tests")
     p.add_argument("--out", required=True)
 
@@ -189,6 +203,28 @@ def main(argv: list[str] | None = None) -> int:
                            settings=settings, **smoke)
         print(json.dumps({"errors": summary["errors"], "done": sorted(summary["results"])}, indent=2))
         return 1 if summary["errors"] else 0
+
+    if args.command == "study":
+        from jersey_detect.study import run_study
+
+        base = _load_json(args.config)
+        kwargs = {}
+        if args.smoke:
+            base.update(image_size=128, epochs=1, batch_size=8, num_workers=0, eval_every=1,
+                        warmup_epochs=1, amp=False)
+            kwargs = {"n_boot": 20, "yolo_kwargs": {"batch": 4, "workers": 0, "device": "cpu"},
+                      "yolo_override": {"imgsz": 64, "epochs": 1}}
+        summary = run_study(args.data, args.out, base, seeds=args.seeds, fractions=args.fractions,
+                            time_budget_hours=args.hours, **kwargs)
+        print(json.dumps({"errors": summary["errors"], "done": sorted(summary["runs"])}, indent=2))
+        return 1 if summary["errors"] else 0
+
+    if args.command == "rescore":
+        from jersey_detect.rescore import rescore
+
+        summary = rescore(args.data, args.checkpoints, args.out)
+        print((Path(args.out) / "results.md").read_text())
+        return 0 if summary["results"] else 1
 
     from jersey_detect.synthetic import make_dataset
 

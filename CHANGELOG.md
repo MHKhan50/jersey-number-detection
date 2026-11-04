@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- AP by number size (small < 8 px, medium 8-16 px, large > 16 px at the original 128 px),
+  following the area-range rules of `pycocotools`; added to every new run.
+- `jersey-detect study` and `notebooks/kaggle_study.ipynb`: data-efficiency study (10% and 25%
+  of the training images, nested subsets, same number of training steps) for JerseyNet and
+  YOLOv8n from scratch and from COCO weights, plus YOLOv8n with JerseyNet's augmentation.
+- `jersey-detect rescore` and `notebooks/kaggle_rescore.ipynb`: AP by size for saved checkpoints.
+- `train_fraction` and `subset_seed` training settings.
+
 ## 2.0.0 (2026-10-31)
 
 - New model: JerseyNet, an anchor-free CenterNet-style detector trained from scratch, which can

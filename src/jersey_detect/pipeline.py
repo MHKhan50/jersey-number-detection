@@ -27,7 +27,7 @@ import numpy as np
 
 from jersey_detect import __version__
 from jersey_detect.data import load_dataset, split_stats
-from jersey_detect.metrics import all_metrics, bootstrap_ci
+from jersey_detect.metrics import all_metrics, bootstrap_ci, size_metrics
 
 
 @dataclass
@@ -85,6 +85,7 @@ def _predictions_json(records, dets, scores) -> list[dict]:
 def _score(name, records, dets, scores, n_boot) -> dict:
     gts = [r.boxes for r in records]
     m = all_metrics(gts, dets, scores)
+    m["by_size"] = size_metrics(gts, dets, scores)
     if n_boot:
         m["ci95"] = bootstrap_ci(gts, dets, scores, n_boot=n_boot)
     return m

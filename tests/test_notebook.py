@@ -9,6 +9,8 @@ ROOT = Path(__file__).resolve().parents[1]
 NOTEBOOK = ROOT / "notebooks" / "kaggle_train.ipynb"
 YOLO_NOTEBOOK = ROOT / "notebooks" / "kaggle_yolo_baseline.ipynb"
 ABLATION_NOTEBOOK = ROOT / "notebooks" / "kaggle_ablation.ipynb"
+STUDY_NOTEBOOK = ROOT / "notebooks" / "kaggle_study.ipynb"
+RESCORE_NOTEBOOK = ROOT / "notebooks" / "kaggle_rescore.ipynb"
 
 
 def _code_cells():
@@ -16,8 +18,9 @@ def _code_cells():
     return [("".join(c["source"])) for c in nb["cells"] if c["cell_type"] == "code"]
 
 
-@pytest.mark.parametrize("path", [NOTEBOOK, YOLO_NOTEBOOK, ABLATION_NOTEBOOK],
-                         ids=["train", "yolo", "ablation"])
+@pytest.mark.parametrize("path", [NOTEBOOK, YOLO_NOTEBOOK, ABLATION_NOTEBOOK, STUDY_NOTEBOOK,
+                                  RESCORE_NOTEBOOK],
+                         ids=["train", "yolo", "ablation", "study", "rescore"])
 def test_notebook_is_valid_python_and_has_no_outputs(path):
     nb = json.loads(path.read_text())
     assert nb["nbformat"] == 4

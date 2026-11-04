@@ -1,13 +1,17 @@
 """COCO-style average precision for a single class, written in NumPy.
 
 It follows the matching and accumulation rules of ``pycocotools.COCOeval`` for one category
-and the ``all`` area range: detections are ranked by score inside each image and capped at
+and one area range (``all`` by default): detections are ranked by score inside each image and capped at
 ``max_dets``, each one is matched to the unmatched ground-truth box with the highest IoU at or
 above the threshold, precision is made monotone, and it is sampled at 101 recall points. The
 test suite checks the numbers against ``pycocotools`` when it is installed.
 
 Images without ground truth are part of the evaluation: a detection on such an image is a
 false positive.
+
+Size ranges work as in ``pycocotools``: ground-truth boxes outside the range are ignored, a
+detection matched to an ignored box is ignored, and an unmatched detection outside the range is
+ignored. Here the range is given on the box side ``sqrt(w * h)`` in the units of the boxes.
 """
 
 from __future__ import annotations
@@ -20,27 +24,51 @@ IOU_THRESHOLDS = np.linspace(0.5, 0.95, 10)
 RECALL_POINTS = np.linspace(0.0, 1.0, 101)
 
 
-def _match_image(gt: np.ndarray, det: np.ndarray, scores: np.ndarray, max_dets: int):
+def _side(boxes: np.ndarray) -> np.ndarray:
+    return np.sqrt(np.clip(boxes[:, 2] - boxes[:, 0], 0, None) * np.clip(boxes[:, 3] - boxes[:, 1], 0, None))
+
+
+def _match_image(gt: np.ndarray, det: np.ndarray, scores: np.ndarray, max_dets: int,
+                 side_range: tuple[float, float] | None = None):
     order = np.argsort(-scores, kind="mergesort")[:max_dets]
     det, scores = det[order], scores[order]
+    if side_range is None:
+        gt_ignore = np.zeros(len(gt), dtype=bool)
+    else:
+        lo, hi = side_range
+        side = _side(gt)
+        gt_ignore = (side < lo) | (side > hi)
+        keep = np.argsort(gt_ignore, kind="mergesort")  # boxes in range first, as pycocotools
+        gt, gt_ignore = gt[keep], gt_ignore[keep]
     ious = iou_matrix(det, gt)
     matched = np.zeros((len(IOU_THRESHOLDS), len(det)), dtype=bool)
+    ignored = np.zeros((len(IOU_THRESHOLDS), len(det)), dtype=bool)
     for ti, t in enumerate(IOU_THRESHOLDS):
         gt_taken = np.zeros(len(gt), dtype=bool)
         for d in range(len(det)):
             best, best_g = min(t, 1 - 1e-10), -1
             for g in range(len(gt)):
-                if gt_taken[g] or ious[d, g] < best:
+                if gt_taken[g]:
+                    continue
+                if best_g > -1 and not gt_ignore[best_g] and gt_ignore[g]:
+                    break  # a box in range is matched; ignored boxes are only a fallback
+                if ious[d, g] < best:
                     continue
                 best, best_g = ious[d, g], g
             if best_g >= 0:
                 gt_taken[best_g] = True
                 matched[ti, d] = True
-    return scores, matched
+                ignored[ti, d] = gt_ignore[best_g]
+    if side_range is not None and len(det):
+        side = _side(det)
+        outside = (side < side_range[0]) | (side > side_range[1])
+        ignored |= ~matched & outside[None, :]
+    return scores, matched, int((~gt_ignore).sum()), ignored
 
 
-def match_images(gts, dets, scores, max_dets: int = 100) -> list[tuple]:
-    """Per-image matching results ``(scores, matched[T, D], n_gt)``.
+def match_images(gts, dets, scores, max_dets: int = 100,
+                 side_range: tuple[float, float] | None = None) -> list[tuple]:
+    """Per-image matching results ``(scores, matched[T, D], n_gt, ignored[T, D])``.
 
     Matching only depends on the image itself, so bootstrap resampling can reuse it.
     """
@@ -53,8 +81,7 @@ def match_images(gts, dets, scores, max_dets: int = 100) -> list[tuple]:
         sc = np.asarray(sc, dtype=np.float64).reshape(-1)
         if len(det) != len(sc):
             raise ValueError("each detection needs exactly one score")
-        s, m = _match_image(gt, det, sc, max_dets)
-        out.append((s, m, len(gt)))
+        out.append(_match_image(gt, det, sc, max_dets, side_range))
     return out
 
 
@@ -66,15 +93,17 @@ def accumulate(matches: list[tuple]) -> dict[str, float]:
         return out
     scores_cat = np.concatenate([m[0] for m in matches])
     matched_cat = np.concatenate([m[1] for m in matches], axis=1)
+    ignored_cat = np.concatenate([m[3] if len(m) > 3 else np.zeros_like(m[1]) for m in matches], axis=1)
     order = np.argsort(-scores_cat, kind="mergesort")
-    matched_cat = matched_cat[:, order]
+    matched_cat, ignored_cat = matched_cat[:, order], ignored_cat[:, order]
 
     precision = np.zeros((len(IOU_THRESHOLDS), len(RECALL_POINTS)))
     recall = np.zeros(len(IOU_THRESHOLDS))
     eps = np.spacing(1)
     for ti in range(len(IOU_THRESHOLDS)):
-        tp = np.cumsum(matched_cat[ti]).astype(np.float64)
-        fp = np.cumsum(~matched_cat[ti]).astype(np.float64)
+        valid_det = ~ignored_cat[ti]
+        tp = np.cumsum(matched_cat[ti] & valid_det).astype(np.float64)
+        fp = np.cumsum(~matched_cat[ti] & valid_det).astype(np.float64)
         rc = tp / n_gt
         pr = tp / (fp + tp + eps)
         recall[ti] = rc[-1]
@@ -90,10 +119,11 @@ def accumulate(matches: list[tuple]) -> dict[str, float]:
     return out
 
 
-def evaluate(gts, dets, scores, max_dets: int = 100) -> dict[str, float]:
+def evaluate(gts, dets, scores, max_dets: int = 100,
+             side_range: tuple[float, float] | None = None) -> dict[str, float]:
     """Return AP50:95, AP50, AP75 and AR (at ``max_dets``) over all images.
 
     ``gts[i]`` is a (G, 4) array of boxes for image ``i``, ``dets[i]`` (D, 4) and
     ``scores[i]`` (D,). Boxes are [x1, y1, x2, y2] in any consistent unit.
     """
-    return accumulate(match_images(gts, dets, scores, max_dets))
+    return accumulate(match_images(gts, dets, scores, max_dets, side_range))

@@ -86,6 +86,18 @@ high-resolution head being limited by small objects at 256 px.
 The YOLOv8n 640 px seed-0 run reproduces the earlier first-box result exactly (0.581, 68.5%),
 and the mean-box baseline matches its earlier value (0.016), which cross-checks the evaluator.
 
+### Follow-up runs (in progress)
+
+Two notebooks test the explanations above directly:
+
+* [`notebooks/kaggle_study.ipynb`](notebooks/kaggle_study.ipynb): JerseyNet and YOLOv8n (from
+  scratch and from COCO weights) trained on 10% and 25% of the training images, for the same
+  number of steps as the full runs, to see whether pretraining matters more with less data; and
+  YOLOv8n from scratch with JerseyNet's augmentation (no mosaic, no flip), to separate
+  augmentation from the rest of the recipe.
+* [`notebooks/kaggle_rescore.ipynb`](notebooks/kaggle_rescore.ipynb): test AP for small
+  (< 8 px), medium and large numbers, from the saved checkpoints of the runs above.
+
 ## Dataset
 
 Roboflow export `jersey-2` (one class, `number`, YOLO format). The images are ice-hockey scenes,
@@ -103,7 +115,7 @@ The median box side is about 8% of the image (about 10 pixels), and one in ten i
 Duplicate check (difference hash, distance ≤ 4): 9 validation images and 1 test image have a
 near-identical training image; no Roboflow source names are shared across splits.
 
-The dataset It is not included in this repository. Download it from
+The dataset is not included in this repository. Download it from
 Roboflow in **YOLOv8** format; the expected layout is:
 
 ```
@@ -208,16 +220,22 @@ src/jersey_detect/
   detector.py     JerseyNet, focal loss, decoding
   engine.py       training loop (AMP, resume, time budget) and inference
   coco_eval.py    COCO-style AP in NumPy
-  metrics.py      first-box protocol, bootstrap intervals
+  metrics.py      first-box protocol, AP by number size, bootstrap intervals
   leakage.py      cross-split duplicate check
   baselines.py    mean-box baseline and the v1 CNN regressor
   pipeline.py     the full experiment
+  ablation.py     ablation of the JerseyNet recipe
+  yolo_baseline.py  YOLOv8n settings scored with the same evaluator
+  study.py        data-efficiency study and augmentation-matched YOLOv8n
+  rescore.py      AP by number size for saved checkpoints
   prepare.py      dataset discovery and Roboflow download
   cli.py          `jersey-detect` command
 configs/          training and pipeline settings
-notebooks/        Kaggle notebook
+notebooks/        Kaggle notebooks
 legacy/           2025 coursework notebook and slides
 docs/paper/       paper draft
+docs/experiments/ archived results of every Kaggle run
+paper/            LaTeX source of the paper
 tests/            pytest suite
 ```
 
