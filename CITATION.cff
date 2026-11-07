@@ -5,9 +5,11 @@ type: software
 authors:
   - family-names: Hussain
     given-names: Muzammal
-version: 2.0.0
-date-released: 2026-10-31
+    orcid: "https://orcid.org/0009-0001-2570-5686"
+version: 2.1.0
+date-released: 2026-11-07
 license: MIT
+doi: 10.5281/zenodo.23281896
 repository-code: "https://github.com/MHKhan50/jersey-number-detection"
 keywords:
   - jersey number

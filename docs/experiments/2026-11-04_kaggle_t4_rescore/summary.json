@@ -1,0 +1,1202 @@
+{
+  "results": {
+    "JerseyNet, 384 px (ablation run) (seed 0)": {
+      "kind": "jerseynet",
+      "path": "/kaggle/input/notebooks/muzammalhussain11/jerseynet-ablation-jersey-2/ablation/runs/384px_seed0/best.pt",
+      "imgsz": 384,
+      "name": "JerseyNet, 384 px (ablation run)",
+      "seed": 0,
+      "run": "/kaggle/input/notebooks/muzammalhussain11/jerseynet-ablation-jersey-2/ablation/runs/384px_seed0",
+      "test": {
+        "ap50_95": 0.27661111561364526,
+        "ap50": 0.5428376651195116,
+        "ap75": 0.2535094620139643,
+        "ar": 0.4064102564102564,
+        "num_gt": 234,
+        "num_det": 10938,
+        "first_box_mean_iou": 0.4503928027196208,
+        "first_box_iou_ge_0_5": 0.5615384615384615,
+        "scored_images": 130,
+        "images": 147,
+        "by_size": {
+          "small": {
+            "ap50_95": 0.0854004740718149,
+            "ap50": 0.2820593727049564,
+            "ar": 0.20212765957446804,
+            "num_gt": 94
+          },
+          "medium": {
+            "ap50_95": 0.3524509057122245,
+            "ap50": 0.68934307822027,
+            "ar": 0.4976190476190476,
+            "num_gt": 84
+          },
+          "large": {
+            "ap50_95": 0.5152204343218246,
+            "ap50": 0.78695400485343,
+            "ar": 0.6125,
+            "num_gt": 56
+          }
+        }
+      }
+    },
+    "JerseyNet, 256 px (ablation run) (seed 0)": {
+      "kind": "jerseynet",
+      "path": "/kaggle/input/notebooks/muzammalhussain11/jerseynet-ablation-jersey-2/ablation/runs/baseline_seed0/best.pt",
+      "imgsz": 256,
+      "name": "JerseyNet, 256 px (ablation run)",
+      "seed": 0,
+      "run": "/kaggle/input/notebooks/muzammalhussain11/jerseynet-ablation-jersey-2/ablation/runs/baseline_seed0",
+      "test": {
+        "ap50_95": 0.23446806898650452,
+        "ap50": 0.4740115076549388,
+        "ap75": 0.20512844820404788,
+        "ar": 0.35512820512820514,
+        "num_gt": 234,
+        "num_det": 11567,
+        "first_box_mean_iou": 0.46266137931101275,
+        "first_box_iou_ge_0_5": 0.5692307692307692,
+        "scored_images": 130,
+        "images": 147,
+        "by_size": {
+          "small": {
+            "ap50_95": 0.034055834491638105,
+            "ap50": 0.10985645781860888,
+            "ar": 0.14574468085106385,
+            "num_gt": 94
+          },
+          "medium": {
+            "ap50_95": 0.30710311578463756,
+            "ap50": 0.6119593644925676,
+            "ar": 0.4583333333333333,
+            "num_gt": 84
+          },
+          "large": {
+            "ap50_95": 0.4674920971376013,
+            "ap50": 0.854578627867402,
+            "ar": 0.5517857142857143,
+            "num_gt": 56
+          }
+        }
+      }
+    },
+    "JerseyNet, 256 px, GIoU (ablation run) (seed 0)": {
+      "kind": "jerseynet",
+      "path": "/kaggle/input/notebooks/muzammalhussain11/jerseynet-ablation-jersey-2/ablation/runs/giou_seed0/best.pt",
+      "imgsz": 256,
+      "name": "JerseyNet, 256 px, GIoU (ablation run)",
+      "seed": 0,
+      "run": "/kaggle/input/notebooks/muzammalhussain11/jerseynet-ablation-jersey-2/ablation/runs/giou_seed0",
+      "test": {
+        "ap50_95": 0.25539108659658455,
+        "ap50": 0.5023345242189742,
+        "ap75": 0.2469627612763477,
+        "ar": 0.3696581196581197,
+        "num_gt": 234,
+        "num_det": 9477,
+        "first_box_mean_iou": 0.49791454072054103,
+        "first_box_iou_ge_0_5": 0.6230769230769231,
+        "scored_images": 130,
+        "images": 147,
+        "by_size": {
+          "small": {
+            "ap50_95": 0.05343316137587854,
+            "ap50": 0.17987118748492542,
+            "ar": 0.15319148936170213,
+            "num_gt": 94
+          },
+          "medium": {
+            "ap50_95": 0.30235586738326664,
+            "ap50": 0.6077171829442278,
+            "ar": 0.4523809523809524,
+            "num_gt": 84
+          },
+          "large": {
+            "ap50_95": 0.5330044362084824,
+            "ap50": 0.8821967566981884,
+            "ar": 0.6089285714285715,
+            "num_gt": 56
+          }
+        }
+      }
+    },
+    "JerseyNet, 384 px, mosaic, GIoU (ablation run) (seed 0)": {
+      "kind": "jerseynet",
+      "path": "/kaggle/input/notebooks/muzammalhussain11/jerseynet-ablation-jersey-2/ablation/runs/mosaic_giou_384px_seed0/best.pt",
+      "imgsz": 384,
+      "name": "JerseyNet, 384 px, mosaic, GIoU (ablation run)",
+      "seed": 0,
+      "run": "/kaggle/input/notebooks/muzammalhussain11/jerseynet-ablation-jersey-2/ablation/runs/mosaic_giou_384px_seed0",
+      "test": {
+        "ap50_95": 0.3036607090723139,
+        "ap50": 0.5949820227309106,
+        "ap75": 0.2715769013362792,
+        "ar": 0.44401709401709405,
+        "num_gt": 234,
+        "num_det": 13913,
+        "first_box_mean_iou": 0.5220661728060302,
+        "first_box_iou_ge_0_5": 0.6615384615384615,
+        "scored_images": 130,
+        "images": 147,
+        "by_size": {
+          "small": {
+            "ap50_95": 0.11157995073431938,
+            "ap50": 0.31085455513640237,
+            "ar": 0.25957446808510637,
+            "num_gt": 94
+          },
+          "medium": {
+            "ap50_95": 0.3974242351352249,
+            "ap50": 0.7548135250156793,
+            "ar": 0.5404761904761904,
+            "num_gt": 84
+          },
+          "large": {
+            "ap50_95": 0.5245270726313812,
+            "ap50": 0.8684263352063174,
+            "ar": 0.6089285714285714,
+            "num_gt": 56
+          }
+        }
+      }
+    },
+    "JerseyNet, 384 px, mosaic, GIoU (ablation run) (seed 1)": {
+      "kind": "jerseynet",
+      "path": "/kaggle/input/notebooks/muzammalhussain11/jerseynet-ablation-jersey-2/ablation/runs/mosaic_giou_384px_seed1/best.pt",
+      "imgsz": 384,
+      "name": "JerseyNet, 384 px, mosaic, GIoU (ablation run)",
+      "seed": 1,
+      "run": "/kaggle/input/notebooks/muzammalhussain11/jerseynet-ablation-jersey-2/ablation/runs/mosaic_giou_384px_seed1",
+      "test": {
+        "ap50_95": 0.3075732621003239,
+        "ap50": 0.6036449074489241,
+        "ap75": 0.28515642131539215,
+        "ar": 0.4401709401709402,
+        "num_gt": 234,
+        "num_det": 12289,
+        "first_box_mean_iou": 0.514693977211207,
+        "first_box_iou_ge_0_5": 0.6384615384615384,
+        "scored_images": 130,
+        "images": 147,
+        "by_size": {
+          "small": {
+            "ap50_95": 0.088040021098722,
+            "ap50": 0.2842881117281422,
+            "ar": 0.23297872340425535,
+            "num_gt": 94
+          },
+          "medium": {
+            "ap50_95": 0.4064013923213265,
+            "ap50": 0.7818181243626304,
+            "ar": 0.5392857142857143,
+            "num_gt": 84
+          },
+          "large": {
+            "ap50_95": 0.5337249518796267,
+            "ap50": 0.8548661633956667,
+            "ar": 0.6392857142857143,
+            "num_gt": 56
+          }
+        }
+      }
+    },
+    "JerseyNet, 384 px, mosaic, GIoU (ablation run) (seed 2)": {
+      "kind": "jerseynet",
+      "path": "/kaggle/input/notebooks/muzammalhussain11/jerseynet-ablation-jersey-2/ablation/runs/mosaic_giou_384px_seed2/best.pt",
+      "imgsz": 384,
+      "name": "JerseyNet, 384 px, mosaic, GIoU (ablation run)",
+      "seed": 2,
+      "run": "/kaggle/input/notebooks/muzammalhussain11/jerseynet-ablation-jersey-2/ablation/runs/mosaic_giou_384px_seed2",
+      "test": {
+        "ap50_95": 0.31402536844084195,
+        "ap50": 0.5929447012267018,
+        "ap75": 0.3257241357971507,
+        "ar": 0.4371794871794871,
+        "num_gt": 234,
+        "num_det": 12429,
+        "first_box_mean_iou": 0.5222671389897541,
+        "first_box_iou_ge_0_5": 0.6461538461538462,
+        "scored_images": 130,
+        "images": 147,
+        "by_size": {
+          "small": {
+            "ap50_95": 0.10331578401702204,
+            "ap50": 0.2756018038485597,
+            "ar": 0.23829787234042552,
+            "num_gt": 94
+          },
+          "medium": {
+            "ap50_95": 0.41912646878673643,
+            "ap50": 0.7873668766699365,
+            "ar": 0.55,
+            "num_gt": 84
+          },
+          "large": {
+            "ap50_95": 0.5283672269205082,
+            "ap50": 0.8600199554449329,
+            "ar": 0.6017857142857144,
+            "num_gt": 56
+          }
+        }
+      }
+    },
+    "JerseyNet, 256 px, mosaic, GIoU (ablation run) (seed 0)": {
+      "kind": "jerseynet",
+      "path": "/kaggle/input/notebooks/muzammalhussain11/jerseynet-ablation-jersey-2/ablation/runs/mosaic_giou_seed0/best.pt",
+      "imgsz": 256,
+      "name": "JerseyNet, 256 px, mosaic, GIoU (ablation run)",
+      "seed": 0,
+      "run": "/kaggle/input/notebooks/muzammalhussain11/jerseynet-ablation-jersey-2/ablation/runs/mosaic_giou_seed0",
+      "test": {
+        "ap50_95": 0.2575027661764853,
+        "ap50": 0.5098475925465142,
+        "ap75": 0.2550449702077429,
+        "ar": 0.4042735042735043,
+        "num_gt": 234,
+        "num_det": 13674,
+        "first_box_mean_iou": 0.4962365505825623,
+        "first_box_iou_ge_0_5": 0.6076923076923076,
+        "scored_images": 130,
+        "images": 147,
+        "by_size": {
+          "small": {
+            "ap50_95": 0.050103990718354634,
+            "ap50": 0.17633381990122587,
+            "ar": 0.19680851063829788,
+            "num_gt": 94
+          },
+          "medium": {
+            "ap50_95": 0.3212115919833841,
+            "ap50": 0.6570103965863343,
+            "ar": 0.488095238095238,
+            "num_gt": 84
+          },
+          "large": {
+            "ap50_95": 0.5274310849212707,
+            "ap50": 0.8417677371593061,
+            "ar": 0.6267857142857143,
+            "num_gt": 56
+          }
+        }
+      }
+    },
+    "JerseyNet, 256 px, mosaic (ablation run) (seed 0)": {
+      "kind": "jerseynet",
+      "path": "/kaggle/input/notebooks/muzammalhussain11/jerseynet-ablation-jersey-2/ablation/runs/mosaic_seed0/best.pt",
+      "imgsz": 256,
+      "name": "JerseyNet, 256 px, mosaic (ablation run)",
+      "seed": 0,
+      "run": "/kaggle/input/notebooks/muzammalhussain11/jerseynet-ablation-jersey-2/ablation/runs/mosaic_seed0",
+      "test": {
+        "ap50_95": 0.272910742539105,
+        "ap50": 0.5387430167217278,
+        "ap75": 0.24794086354925574,
+        "ar": 0.4017094017094017,
+        "num_gt": 234,
+        "num_det": 14101,
+        "first_box_mean_iou": 0.5036723839125042,
+        "first_box_iou_ge_0_5": 0.6153846153846154,
+        "scored_images": 130,
+        "images": 147,
+        "by_size": {
+          "small": {
+            "ap50_95": 0.0606160110764806,
+            "ap50": 0.1959952532474129,
+            "ar": 0.1851063829787234,
+            "num_gt": 94
+          },
+          "medium": {
+            "ap50_95": 0.3523373647160096,
+            "ap50": 0.7155553025481344,
+            "ar": 0.5011904761904762,
+            "num_gt": 84
+          },
+          "large": {
+            "ap50_95": 0.5285121631475828,
+            "ap50": 0.8423656697634512,
+            "ar": 0.6160714285714286,
+            "num_gt": 56
+          }
+        }
+      }
+    },
+    "JerseyNet, 256 px (seed 0)": {
+      "kind": "jerseynet",
+      "path": "/kaggle/input/notebooks/muzammalhussain11/jerseynet-training-jersey-2/results/runs/jersey_net_seed0/best.pt",
+      "imgsz": 256,
+      "name": "JerseyNet, 256 px",
+      "seed": 0,
+      "run": "/kaggle/input/notebooks/muzammalhussain11/jerseynet-training-jersey-2/results/runs/jersey_net_seed0",
+      "test": {
+        "ap50_95": 0.2343383331696661,
+        "ap50": 0.4904510281765618,
+        "ap75": 0.21913775670110142,
+        "ar": 0.3598290598290598,
+        "num_gt": 234,
+        "num_det": 11046,
+        "first_box_mean_iou": 0.4538080072320964,
+        "first_box_iou_ge_0_5": 0.5615384615384615,
+        "scored_images": 130,
+        "images": 147,
+        "by_size": {
+          "small": {
+            "ap50_95": 0.04061193193647569,
+            "ap50": 0.12253722535461292,
+            "ar": 0.15106382978723404,
+            "num_gt": 94
+          },
+          "medium": {
+            "ap50_95": 0.3060229804925832,
+            "ap50": 0.6247129026488357,
+            "ar": 0.469047619047619,
+            "num_gt": 84
+          },
+          "large": {
+            "ap50_95": 0.4560854978892369,
+            "ap50": 0.8812930940408904,
+            "ar": 0.5464285714285715,
+            "num_gt": 56
+          }
+        }
+      }
+    },
+    "JerseyNet, 256 px (seed 1)": {
+      "kind": "jerseynet",
+      "path": "/kaggle/input/notebooks/muzammalhussain11/jerseynet-training-jersey-2/results/runs/jersey_net_seed1/best.pt",
+      "imgsz": 256,
+      "name": "JerseyNet, 256 px",
+      "seed": 1,
+      "run": "/kaggle/input/notebooks/muzammalhussain11/jerseynet-training-jersey-2/results/runs/jersey_net_seed1",
+      "test": {
+        "ap50_95": 0.24588824226279263,
+        "ap50": 0.49647088804264294,
+        "ap75": 0.23513423778556325,
+        "ar": 0.382051282051282,
+        "num_gt": 234,
+        "num_det": 9354,
+        "first_box_mean_iou": 0.4732094967169154,
+        "first_box_iou_ge_0_5": 0.5923076923076923,
+        "scored_images": 130,
+        "images": 147,
+        "by_size": {
+          "small": {
+            "ap50_95": 0.03271806301989779,
+            "ap50": 0.12215797502936082,
+            "ar": 0.1627659574468085,
+            "num_gt": 94
+          },
+          "medium": {
+            "ap50_95": 0.33998619583336,
+            "ap50": 0.6485106651880189,
+            "ar": 0.5071428571428571,
+            "num_gt": 84
+          },
+          "large": {
+            "ap50_95": 0.4606626986718376,
+            "ap50": 0.8304856443756395,
+            "ar": 0.5625,
+            "num_gt": 56
+          }
+        }
+      }
+    },
+    "JerseyNet, 256 px (seed 2)": {
+      "kind": "jerseynet",
+      "path": "/kaggle/input/notebooks/muzammalhussain11/jerseynet-training-jersey-2/results/runs/jersey_net_seed2/best.pt",
+      "imgsz": 256,
+      "name": "JerseyNet, 256 px",
+      "seed": 2,
+      "run": "/kaggle/input/notebooks/muzammalhussain11/jerseynet-training-jersey-2/results/runs/jersey_net_seed2",
+      "test": {
+        "ap50_95": 0.24254064844326156,
+        "ap50": 0.4982278216165013,
+        "ap75": 0.2273880672934281,
+        "ar": 0.37094017094017095,
+        "num_gt": 234,
+        "num_det": 6641,
+        "first_box_mean_iou": 0.49996199886867043,
+        "first_box_iou_ge_0_5": 0.6307692307692307,
+        "scored_images": 130,
+        "images": 147,
+        "by_size": {
+          "small": {
+            "ap50_95": 0.0545885253451443,
+            "ap50": 0.19593186856048433,
+            "ar": 0.1446808510638298,
+            "num_gt": 94
+          },
+          "medium": {
+            "ap50_95": 0.3127376328421106,
+            "ap50": 0.6119054951510066,
+            "ar": 0.48452380952380947,
+            "num_gt": 84
+          },
+          "large": {
+            "ap50_95": 0.4734700894672603,
+            "ap50": 0.8212637554453373,
+            "ar": 0.5803571428571428,
+            "num_gt": 56
+          }
+        }
+      }
+    },
+    "yolov8n_coco_pretrained_256_px (seed 0)": {
+      "kind": "yolo",
+      "path": "/kaggle/input/notebooks/muzammalhussain11/yolov8n-baselines-jersey-2/yolo_results/runs/yolov8n_coco_pretrained_256_px_seed0/weights/best.pt",
+      "imgsz": 256,
+      "name": "yolov8n_coco_pretrained_256_px",
+      "seed": 0,
+      "run": "/kaggle/input/notebooks/muzammalhussain11/yolov8n-baselines-jersey-2/yolo_results/runs/yolov8n_coco_pretrained_256_px_seed0",
+      "test": {
+        "ap50_95": 0.38061959769344106,
+        "ap50": 0.6793781519523693,
+        "ap75": 0.3843587381832899,
+        "ar": 0.4940170940170939,
+        "num_gt": 234,
+        "num_det": 3655,
+        "first_box_mean_iou": 0.5605506367262836,
+        "first_box_iou_ge_0_5": 0.6923076923076923,
+        "scored_images": 130,
+        "images": 147,
+        "by_size": {
+          "small": {
+            "ap50_95": 0.10130122841906117,
+            "ap50": 0.288223950237604,
+            "ar": 0.2670212765957447,
+            "num_gt": 94
+          },
+          "medium": {
+            "ap50_95": 0.4765433020198306,
+            "ap50": 0.8798321281510665,
+            "ar": 0.5928571428571427,
+            "num_gt": 84
+          },
+          "large": {
+            "ap50_95": 0.6759018882310054,
+            "ap50": 0.954187534138029,
+            "ar": 0.7267857142857144,
+            "num_gt": 56
+          }
+        }
+      }
+    },
+    "yolov8n_coco_pretrained_256_px (seed 1)": {
+      "kind": "yolo",
+      "path": "/kaggle/input/notebooks/muzammalhussain11/yolov8n-baselines-jersey-2/yolo_results/runs/yolov8n_coco_pretrained_256_px_seed1/weights/best.pt",
+      "imgsz": 256,
+      "name": "yolov8n_coco_pretrained_256_px",
+      "seed": 1,
+      "run": "/kaggle/input/notebooks/muzammalhussain11/yolov8n-baselines-jersey-2/yolo_results/runs/yolov8n_coco_pretrained_256_px_seed1",
+      "test": {
+        "ap50_95": 0.38439222690456226,
+        "ap50": 0.6717246542574511,
+        "ap75": 0.38394727158362835,
+        "ar": 0.48803418803418797,
+        "num_gt": 234,
+        "num_det": 4573,
+        "first_box_mean_iou": 0.5927860772854694,
+        "first_box_iou_ge_0_5": 0.7307692307692307,
+        "scored_images": 130,
+        "images": 147,
+        "by_size": {
+          "small": {
+            "ap50_95": 0.08898147185770855,
+            "ap50": 0.2505320373437358,
+            "ar": 0.2521276595744681,
+            "num_gt": 94
+          },
+          "medium": {
+            "ap50_95": 0.49159194576496773,
+            "ap50": 0.8650770058810903,
+            "ar": 0.5869047619047618,
+            "num_gt": 84
+          },
+          "large": {
+            "ap50_95": 0.6707231038774657,
+            "ap50": 0.9584500164291168,
+            "ar": 0.7357142857142857,
+            "num_gt": 56
+          }
+        }
+      }
+    },
+    "yolov8n_coco_pretrained_256_px (seed 2)": {
+      "kind": "yolo",
+      "path": "/kaggle/input/notebooks/muzammalhussain11/yolov8n-baselines-jersey-2/yolo_results/runs/yolov8n_coco_pretrained_256_px_seed2/weights/best.pt",
+      "imgsz": 256,
+      "name": "yolov8n_coco_pretrained_256_px",
+      "seed": 2,
+      "run": "/kaggle/input/notebooks/muzammalhussain11/yolov8n-baselines-jersey-2/yolo_results/runs/yolov8n_coco_pretrained_256_px_seed2",
+      "test": {
+        "ap50_95": 0.3864992866910417,
+        "ap50": 0.674779234509529,
+        "ap75": 0.4141411896287829,
+        "ar": 0.4854700854700854,
+        "num_gt": 234,
+        "num_det": 4407,
+        "first_box_mean_iou": 0.5741444956719407,
+        "first_box_iou_ge_0_5": 0.7076923076923077,
+        "scored_images": 130,
+        "images": 147,
+        "by_size": {
+          "small": {
+            "ap50_95": 0.11276820926644399,
+            "ap50": 0.32778159791301115,
+            "ar": 0.24574468085106385,
+            "num_gt": 94
+          },
+          "medium": {
+            "ap50_95": 0.4866277244638964,
+            "ap50": 0.8392200202146092,
+            "ar": 0.5809523809523809,
+            "num_gt": 84
+          },
+          "large": {
+            "ap50_95": 0.6859933720024023,
+            "ap50": 0.9641523788304265,
+            "ar": 0.7446428571428572,
+            "num_gt": 56
+          }
+        }
+      }
+    },
+    "yolov8n_coco_pretrained_640_px (seed 0)": {
+      "kind": "yolo",
+      "path": "/kaggle/input/notebooks/muzammalhussain11/yolov8n-baselines-jersey-2/yolo_results/runs/yolov8n_coco_pretrained_640_px_seed0/weights/best.pt",
+      "imgsz": 640,
+      "name": "yolov8n_coco_pretrained_640_px",
+      "seed": 0,
+      "run": "/kaggle/input/notebooks/muzammalhussain11/yolov8n-baselines-jersey-2/yolo_results/runs/yolov8n_coco_pretrained_640_px_seed0",
+      "test": {
+        "ap50_95": 0.43030489558737806,
+        "ap50": 0.706180598781299,
+        "ap75": 0.5133326445270299,
+        "ar": 0.5427350427350427,
+        "num_gt": 234,
+        "num_det": 5333,
+        "first_box_mean_iou": 0.5810323692681019,
+        "first_box_iou_ge_0_5": 0.6846153846153846,
+        "scored_images": 130,
+        "images": 147,
+        "by_size": {
+          "small": {
+            "ap50_95": 0.12426915394024254,
+            "ap50": 0.31606424440421393,
+            "ar": 0.32659574468085106,
+            "num_gt": 94
+          },
+          "medium": {
+            "ap50_95": 0.5665770258932085,
+            "ap50": 0.8881017955331869,
+            "ar": 0.6607142857142857,
+            "num_gt": 84
+          },
+          "large": {
+            "ap50_95": 0.6805197535760513,
+            "ap50": 0.9603789902095243,
+            "ar": 0.7285714285714286,
+            "num_gt": 56
+          }
+        }
+      }
+    },
+    "yolov8n_coco_pretrained_640_px (seed 1)": {
+      "kind": "yolo",
+      "path": "/kaggle/input/notebooks/muzammalhussain11/yolov8n-baselines-jersey-2/yolo_results/runs/yolov8n_coco_pretrained_640_px_seed1/weights/best.pt",
+      "imgsz": 640,
+      "name": "yolov8n_coco_pretrained_640_px",
+      "seed": 1,
+      "run": "/kaggle/input/notebooks/muzammalhussain11/yolov8n-baselines-jersey-2/yolo_results/runs/yolov8n_coco_pretrained_640_px_seed1",
+      "test": {
+        "ap50_95": 0.4071240572114796,
+        "ap50": 0.7043313968034246,
+        "ap75": 0.4461369100860802,
+        "ar": 0.5247863247863248,
+        "num_gt": 234,
+        "num_det": 4062,
+        "first_box_mean_iou": 0.5929208402223142,
+        "first_box_iou_ge_0_5": 0.7153846153846154,
+        "scored_images": 130,
+        "images": 147,
+        "by_size": {
+          "small": {
+            "ap50_95": 0.1307537105672009,
+            "ap50": 0.38668755958243445,
+            "ar": 0.35106382978723405,
+            "num_gt": 94
+          },
+          "medium": {
+            "ap50_95": 0.514047419139417,
+            "ap50": 0.837482651786366,
+            "ar": 0.6095238095238095,
+            "num_gt": 84
+          },
+          "large": {
+            "ap50_95": 0.6464289841495363,
+            "ap50": 0.9272250454076263,
+            "ar": 0.6892857142857143,
+            "num_gt": 56
+          }
+        }
+      }
+    },
+    "yolov8n_coco_pretrained_640_px (seed 2)": {
+      "kind": "yolo",
+      "path": "/kaggle/input/notebooks/muzammalhussain11/yolov8n-baselines-jersey-2/yolo_results/runs/yolov8n_coco_pretrained_640_px_seed2/weights/best.pt",
+      "imgsz": 640,
+      "name": "yolov8n_coco_pretrained_640_px",
+      "seed": 2,
+      "run": "/kaggle/input/notebooks/muzammalhussain11/yolov8n-baselines-jersey-2/yolo_results/runs/yolov8n_coco_pretrained_640_px_seed2",
+      "test": {
+        "ap50_95": 0.41836830538513975,
+        "ap50": 0.6916166604816867,
+        "ap75": 0.4687797437465936,
+        "ar": 0.5474358974358974,
+        "num_gt": 234,
+        "num_det": 5426,
+        "first_box_mean_iou": 0.5947291734996077,
+        "first_box_iou_ge_0_5": 0.7,
+        "scored_images": 130,
+        "images": 147,
+        "by_size": {
+          "small": {
+            "ap50_95": 0.11375915992784545,
+            "ap50": 0.30628567454527716,
+            "ar": 0.3393617021276596,
+            "num_gt": 94
+          },
+          "medium": {
+            "ap50_95": 0.544784960133768,
+            "ap50": 0.8665286848217887,
+            "ar": 0.6428571428571428,
+            "num_gt": 84
+          },
+          "large": {
+            "ap50_95": 0.6834029471821558,
+            "ap50": 0.9492578892132291,
+            "ar": 0.7535714285714286,
+            "num_gt": 56
+          }
+        }
+      }
+    },
+    "yolov8n_from_scratch_256_px (seed 0)": {
+      "kind": "yolo",
+      "path": "/kaggle/input/notebooks/muzammalhussain11/yolov8n-baselines-jersey-2/yolo_results/runs/yolov8n_from_scratch_256_px_seed0/weights/best.pt",
+      "imgsz": 256,
+      "name": "yolov8n_from_scratch_256_px",
+      "seed": 0,
+      "run": "/kaggle/input/notebooks/muzammalhussain11/yolov8n-baselines-jersey-2/yolo_results/runs/yolov8n_from_scratch_256_px_seed0",
+      "test": {
+        "ap50_95": 0.3427005520686893,
+        "ap50": 0.6241105602430274,
+        "ap75": 0.37524513939906196,
+        "ar": 0.4568376068376068,
+        "num_gt": 234,
+        "num_det": 4517,
+        "first_box_mean_iou": 0.5245997497577204,
+        "first_box_iou_ge_0_5": 0.6461538461538462,
+        "scored_images": 130,
+        "images": 147,
+        "by_size": {
+          "small": {
+            "ap50_95": 0.06725746605537115,
+            "ap50": 0.23820436256620794,
+            "ar": 0.21170212765957447,
+            "num_gt": 94
+          },
+          "medium": {
+            "ap50_95": 0.462494259288131,
+            "ap50": 0.8055810864955997,
+            "ar": 0.5845238095238094,
+            "num_gt": 84
+          },
+          "large": {
+            "ap50_95": 0.5892921520624055,
+            "ap50": 0.8972869175685244,
+            "ar": 0.6767857142857143,
+            "num_gt": 56
+          }
+        }
+      }
+    },
+    "yolov8n_from_scratch_256_px (seed 1)": {
+      "kind": "yolo",
+      "path": "/kaggle/input/notebooks/muzammalhussain11/yolov8n-baselines-jersey-2/yolo_results/runs/yolov8n_from_scratch_256_px_seed1/weights/best.pt",
+      "imgsz": 256,
+      "name": "yolov8n_from_scratch_256_px",
+      "seed": 1,
+      "run": "/kaggle/input/notebooks/muzammalhussain11/yolov8n-baselines-jersey-2/yolo_results/runs/yolov8n_from_scratch_256_px_seed1",
+      "test": {
+        "ap50_95": 0.3464849418269708,
+        "ap50": 0.6129459344652741,
+        "ap75": 0.3656544026133716,
+        "ar": 0.4683760683760683,
+        "num_gt": 234,
+        "num_det": 5218,
+        "first_box_mean_iou": 0.5477916156862893,
+        "first_box_iou_ge_0_5": 0.6692307692307692,
+        "scored_images": 130,
+        "images": 147,
+        "by_size": {
+          "small": {
+            "ap50_95": 0.09060780682604566,
+            "ap50": 0.2746200778664068,
+            "ar": 0.24574468085106385,
+            "num_gt": 94
+          },
+          "medium": {
+            "ap50_95": 0.4357533575350172,
+            "ap50": 0.7767753156332946,
+            "ar": 0.5785714285714285,
+            "num_gt": 84
+          },
+          "large": {
+            "ap50_95": 0.6125728313202812,
+            "ap50": 0.892938216763231,
+            "ar": 0.6767857142857142,
+            "num_gt": 56
+          }
+        }
+      }
+    },
+    "yolov8n_from_scratch_256_px (seed 2)": {
+      "kind": "yolo",
+      "path": "/kaggle/input/notebooks/muzammalhussain11/yolov8n-baselines-jersey-2/yolo_results/runs/yolov8n_from_scratch_256_px_seed2/weights/best.pt",
+      "imgsz": 256,
+      "name": "yolov8n_from_scratch_256_px",
+      "seed": 2,
+      "run": "/kaggle/input/notebooks/muzammalhussain11/yolov8n-baselines-jersey-2/yolo_results/runs/yolov8n_from_scratch_256_px_seed2",
+      "test": {
+        "ap50_95": 0.36738326694641155,
+        "ap50": 0.6502941989263789,
+        "ap75": 0.3739117553291336,
+        "ar": 0.4833333333333333,
+        "num_gt": 234,
+        "num_det": 5172,
+        "first_box_mean_iou": 0.5584588671830839,
+        "first_box_iou_ge_0_5": 0.6846153846153846,
+        "scored_images": 130,
+        "images": 147,
+        "by_size": {
+          "small": {
+            "ap50_95": 0.10413747381661227,
+            "ap50": 0.3098483070574382,
+            "ar": 0.2585106382978723,
+            "num_gt": 94
+          },
+          "medium": {
+            "ap50_95": 0.46204121123998926,
+            "ap50": 0.8124470565901886,
+            "ar": 0.6059523809523809,
+            "num_gt": 84
+          },
+          "large": {
+            "ap50_95": 0.6251988861395049,
+            "ap50": 0.9070503700308624,
+            "ar": 0.6767857142857143,
+            "num_gt": 56
+          }
+        }
+      }
+    },
+    "yolov8n_from_scratch_384_px (seed 0)": {
+      "kind": "yolo",
+      "path": "/kaggle/input/notebooks/muzammalhussain11/yolov8n-scratch-384px-jersey-2/yolo_results/runs/yolov8n_from_scratch_384_px_seed0/weights/best.pt",
+      "imgsz": 384,
+      "name": "yolov8n_from_scratch_384_px",
+      "seed": 0,
+      "run": "/kaggle/input/notebooks/muzammalhussain11/yolov8n-scratch-384px-jersey-2/yolo_results/runs/yolov8n_from_scratch_384_px_seed0",
+      "test": {
+        "ap50_95": 0.37121529463615055,
+        "ap50": 0.6501151227396175,
+        "ap75": 0.3718472590334502,
+        "ar": 0.4833333333333333,
+        "num_gt": 234,
+        "num_det": 4610,
+        "first_box_mean_iou": 0.5722354049237485,
+        "first_box_iou_ge_0_5": 0.7,
+        "scored_images": 130,
+        "images": 147,
+        "by_size": {
+          "small": {
+            "ap50_95": 0.09621258637112623,
+            "ap50": 0.2650494872923759,
+            "ar": 0.2808510638297872,
+            "num_gt": 94
+          },
+          "medium": {
+            "ap50_95": 0.5070027967742259,
+            "ap50": 0.8635644939874175,
+            "ar": 0.5928571428571427,
+            "num_gt": 84
+          },
+          "large": {
+            "ap50_95": 0.5855878583035764,
+            "ap50": 0.8806242719085368,
+            "ar": 0.6589285714285714,
+            "num_gt": 56
+          }
+        }
+      }
+    },
+    "yolov8n_from_scratch_384_px (seed 1)": {
+      "kind": "yolo",
+      "path": "/kaggle/input/notebooks/muzammalhussain11/yolov8n-scratch-384px-jersey-2/yolo_results/runs/yolov8n_from_scratch_384_px_seed1/weights/best.pt",
+      "imgsz": 384,
+      "name": "yolov8n_from_scratch_384_px",
+      "seed": 1,
+      "run": "/kaggle/input/notebooks/muzammalhussain11/yolov8n-scratch-384px-jersey-2/yolo_results/runs/yolov8n_from_scratch_384_px_seed1",
+      "test": {
+        "ap50_95": 0.36200352606564634,
+        "ap50": 0.6458579781484006,
+        "ap75": 0.3684298959883024,
+        "ar": 0.4871794871794871,
+        "num_gt": 234,
+        "num_det": 5425,
+        "first_box_mean_iou": 0.5400219468878388,
+        "first_box_iou_ge_0_5": 0.6615384615384615,
+        "scored_images": 130,
+        "images": 147,
+        "by_size": {
+          "small": {
+            "ap50_95": 0.1020034063570199,
+            "ap50": 0.2946373614683303,
+            "ar": 0.2872340425531915,
+            "num_gt": 94
+          },
+          "medium": {
+            "ap50_95": 0.4966826962214991,
+            "ap50": 0.8358422462553599,
+            "ar": 0.6023809523809524,
+            "num_gt": 84
+          },
+          "large": {
+            "ap50_95": 0.5741538633938773,
+            "ap50": 0.8797178026424092,
+            "ar": 0.65,
+            "num_gt": 56
+          }
+        }
+      }
+    },
+    "yolov8n_from_scratch_384_px (seed 2)": {
+      "kind": "yolo",
+      "path": "/kaggle/input/notebooks/muzammalhussain11/yolov8n-scratch-384px-jersey-2/yolo_results/runs/yolov8n_from_scratch_384_px_seed2/weights/best.pt",
+      "imgsz": 384,
+      "name": "yolov8n_from_scratch_384_px",
+      "seed": 2,
+      "run": "/kaggle/input/notebooks/muzammalhussain11/yolov8n-scratch-384px-jersey-2/yolo_results/runs/yolov8n_from_scratch_384_px_seed2",
+      "test": {
+        "ap50_95": 0.3660285332572369,
+        "ap50": 0.6509009764975316,
+        "ap75": 0.37373530996193066,
+        "ar": 0.49444444444444446,
+        "num_gt": 234,
+        "num_det": 4541,
+        "first_box_mean_iou": 0.5499502579134748,
+        "first_box_iou_ge_0_5": 0.6692307692307692,
+        "scored_images": 130,
+        "images": 147,
+        "by_size": {
+          "small": {
+            "ap50_95": 0.10982224971594344,
+            "ap50": 0.300305686791224,
+            "ar": 0.3170212765957447,
+            "num_gt": 94
+          },
+          "medium": {
+            "ap50_95": 0.4701138124045261,
+            "ap50": 0.8063029621414907,
+            "ar": 0.5738095238095238,
+            "num_gt": 84
+          },
+          "large": {
+            "ap50_95": 0.6109004839676045,
+            "ap50": 0.9421671610015684,
+            "ar": 0.6732142857142858,
+            "num_gt": 56
+          }
+        }
+      }
+    }
+  },
+  "aggregate": {
+    "JerseyNet, 256 px": {
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "num_gt_small": 94,
+      "num_gt_medium": 84,
+      "num_gt_large": 56,
+      "ap50_95": {
+        "mean": 0.24092240795857345,
+        "std": 0.005942569033219934
+      },
+      "ap_small": {
+        "mean": 0.0426395067671726,
+        "std": 0.0110753137811334
+      },
+      "ap_medium": {
+        "mean": 0.3195822697226846,
+        "std": 0.017986433487247527
+      },
+      "ap_large": {
+        "mean": 0.46340609534277827,
+        "std": 0.009011141717577572
+      }
+    },
+    "JerseyNet, 256 px (ablation run)": {
+      "seeds": [
+        0
+      ],
+      "num_gt_small": 94,
+      "num_gt_medium": 84,
+      "num_gt_large": 56,
+      "ap50_95": {
+        "mean": 0.23446806898650452,
+        "std": 0.0
+      },
+      "ap_small": {
+        "mean": 0.034055834491638105,
+        "std": 0.0
+      },
+      "ap_medium": {
+        "mean": 0.30710311578463756,
+        "std": 0.0
+      },
+      "ap_large": {
+        "mean": 0.4674920971376013,
+        "std": 0.0
+      }
+    },
+    "JerseyNet, 256 px, GIoU (ablation run)": {
+      "seeds": [
+        0
+      ],
+      "num_gt_small": 94,
+      "num_gt_medium": 84,
+      "num_gt_large": 56,
+      "ap50_95": {
+        "mean": 0.25539108659658455,
+        "std": 0.0
+      },
+      "ap_small": {
+        "mean": 0.05343316137587854,
+        "std": 0.0
+      },
+      "ap_medium": {
+        "mean": 0.30235586738326664,
+        "std": 0.0
+      },
+      "ap_large": {
+        "mean": 0.5330044362084824,
+        "std": 0.0
+      }
+    },
+    "JerseyNet, 256 px, mosaic (ablation run)": {
+      "seeds": [
+        0
+      ],
+      "num_gt_small": 94,
+      "num_gt_medium": 84,
+      "num_gt_large": 56,
+      "ap50_95": {
+        "mean": 0.272910742539105,
+        "std": 0.0
+      },
+      "ap_small": {
+        "mean": 0.0606160110764806,
+        "std": 0.0
+      },
+      "ap_medium": {
+        "mean": 0.3523373647160096,
+        "std": 0.0
+      },
+      "ap_large": {
+        "mean": 0.5285121631475828,
+        "std": 0.0
+      }
+    },
+    "JerseyNet, 256 px, mosaic, GIoU (ablation run)": {
+      "seeds": [
+        0
+      ],
+      "num_gt_small": 94,
+      "num_gt_medium": 84,
+      "num_gt_large": 56,
+      "ap50_95": {
+        "mean": 0.2575027661764853,
+        "std": 0.0
+      },
+      "ap_small": {
+        "mean": 0.050103990718354634,
+        "std": 0.0
+      },
+      "ap_medium": {
+        "mean": 0.3212115919833841,
+        "std": 0.0
+      },
+      "ap_large": {
+        "mean": 0.5274310849212707,
+        "std": 0.0
+      }
+    },
+    "JerseyNet, 384 px (ablation run)": {
+      "seeds": [
+        0
+      ],
+      "num_gt_small": 94,
+      "num_gt_medium": 84,
+      "num_gt_large": 56,
+      "ap50_95": {
+        "mean": 0.27661111561364526,
+        "std": 0.0
+      },
+      "ap_small": {
+        "mean": 0.0854004740718149,
+        "std": 0.0
+      },
+      "ap_medium": {
+        "mean": 0.3524509057122245,
+        "std": 0.0
+      },
+      "ap_large": {
+        "mean": 0.5152204343218246,
+        "std": 0.0
+      }
+    },
+    "JerseyNet, 384 px, mosaic, GIoU (ablation run)": {
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "num_gt_small": 94,
+      "num_gt_medium": 84,
+      "num_gt_large": 56,
+      "ap50_95": {
+        "mean": 0.3084197798711599,
+        "std": 0.0052339263663773415
+      },
+      "ap_small": {
+        "mean": 0.10097858528335446,
+        "std": 0.011942736087375954
+      },
+      "ap_medium": {
+        "mean": 0.4076506987477626,
+        "std": 0.010904921424593154
+      },
+      "ap_large": {
+        "mean": 0.5288730838105054,
+        "std": 0.004619758008943135
+      }
+    },
+    "yolov8n_coco_pretrained_256_px": {
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "num_gt_small": 94,
+      "num_gt_medium": 84,
+      "num_gt_large": 56,
+      "ap50_95": {
+        "mean": 0.38383703709634837,
+        "std": 0.0029789028969546866
+      },
+      "ap_small": {
+        "mean": 0.10101696984773789,
+        "std": 0.0118959161622618
+      },
+      "ap_medium": {
+        "mean": 0.4849209907495649,
+        "std": 0.0076681239309716875
+      },
+      "ap_large": {
+        "mean": 0.6775394547036244,
+        "std": 0.007765725343845749
+      }
+    },
+    "yolov8n_coco_pretrained_640_px": {
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "num_gt_small": 94,
+      "num_gt_medium": 84,
+      "num_gt_large": 56,
+      "ap50_95": {
+        "mean": 0.41859908606133245,
+        "std": 0.01159214224130983
+      },
+      "ap_small": {
+        "mean": 0.12292734147842964,
+        "std": 0.008576364810944752
+      },
+      "ap_medium": {
+        "mean": 0.5418031350554645,
+        "std": 0.026391444769568673
+      },
+      "ap_large": {
+        "mean": 0.6701172283025811,
+        "std": 0.0205652105419144
+      }
+    },
+    "yolov8n_from_scratch_256_px": {
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "num_gt_small": 94,
+      "num_gt_medium": 84,
+      "num_gt_large": 56,
+      "ap50_95": {
+        "mean": 0.3521895869473572,
+        "std": 0.013293469652272648
+      },
+      "ap_small": {
+        "mean": 0.08733424889934303,
+        "std": 0.018656657772546225
+      },
+      "ap_medium": {
+        "mean": 0.4534296093543791,
+        "std": 0.015309759041853126
+      },
+      "ap_large": {
+        "mean": 0.6090212898407305,
+        "std": 0.018214924462692947
+      }
+    },
+    "yolov8n_from_scratch_384_px": {
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "num_gt_small": 94,
+      "num_gt_medium": 84,
+      "num_gt_large": 56,
+      "ap50_95": {
+        "mean": 0.3664157846530112,
+        "std": 0.004618077823270109
+      },
+      "ap_small": {
+        "mean": 0.10267941414802985,
+        "std": 0.006829968813248338
+      },
+      "ap_medium": {
+        "mean": 0.49126643513341706,
+        "std": 0.019031584408232875
+      },
+      "ap_large": {
+        "mean": 0.5902140685550195,
+        "std": 0.018805049770348546
+      }
+    }
+  }
+}

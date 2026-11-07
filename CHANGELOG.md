@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.1.0 (2026-11-07)
 
 - AP by number size (small < 8 px, medium 8-16 px, large > 16 px at the original 128 px),
   following the area-range rules of `pycocotools`; added to every new run.
@@ -9,6 +9,9 @@
   YOLOv8n from scratch and from COCO weights, plus YOLOv8n with JerseyNet's augmentation.
 - `jersey-detect rescore` and `notebooks/kaggle_rescore.ipynb`: AP by size for saved checkpoints.
 - `train_fraction` and `subset_seed` training settings.
+- Results of the follow-up runs (YOLOv8n from scratch at 384 px, AP by size, data efficiency,
+  augmentation-matched YOLOv8n) archived in `docs/experiments/` and summarised in the README.
+- LaTeX preprint in `paper/`, with a script that builds its figures from the archived results.
 
 ## 2.0.0 (2026-10-31)
 

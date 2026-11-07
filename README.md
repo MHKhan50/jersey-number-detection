@@ -43,7 +43,7 @@ baselines, commit `8a40029`) and
 (ablation, [`notebooks/kaggle_ablation.ipynb`](notebooks/kaggle_ablation.ipynb)) and
 [`docs/experiments/2026-11-02_kaggle_t4_yolo384/`](docs/experiments/2026-11-02_kaggle_t4_yolo384/)
 (YOLOv8n from scratch at 384 px).
-JerseyNet training curves: [`docs/paper/figures/val_ap_curves.png`](docs/paper/figures/val_ap_curves.png).
+JerseyNet training curves: [`paper/figures/val_ap_curves.pdf`](paper/figures/val_ap_curves.pdf).
 
 What the numbers say, read from the bottom row up (AP50:95):
 
@@ -79,24 +79,55 @@ result, repeated over three seeds, should be read as firm. The settings are in
 
 At the matched input size of 384 px, both trained from scratch, YOLOv8n reaches 0.366 ± 0.005
 against JerseyNet's 0.308 ± 0.005. The ablation therefore halves the design-and-recipe gap,
-from 0.111 at 256 px (baseline recipes) to 0.058 at 384 px. YOLOv8n itself gains only 0.014
-from the larger input, while JerseyNet gains much more from it, which fits its single
-high-resolution head being limited by small objects at 256 px.
+from 0.111 at 256 px (baseline recipes) to 0.058 at 384 px.
 
 The YOLOv8n 640 px seed-0 run reproduces the earlier first-box result exactly (0.581, 68.5%),
 and the mean-box baseline matches its earlier value (0.016), which cross-checks the evaluator.
 
-### Follow-up runs (in progress)
+### Where the remaining gap is
 
-Two notebooks test the explanations above directly:
+**Augmentation.** YOLOv8n from scratch at 256 px, trained with augmentation close to JerseyNet's
+(no mosaic, mixup or flip, scale ±35%, saturation and value ±30%), drops from 0.352 ± 0.013 to
+**0.280 ± 0.012**. About two-thirds of the 0.111 gap to JerseyNet is augmentation; the other 0.039
+is architecture, losses and the rest of the recipe.
 
-* [`notebooks/kaggle_study.ipynb`](notebooks/kaggle_study.ipynb): JerseyNet and YOLOv8n (from
-  scratch and from COCO weights) trained on 10% and 25% of the training images, for the same
-  number of steps as the full runs, to see whether pretraining matters more with less data; and
-  YOLOv8n from scratch with JerseyNet's augmentation (no mosaic, no flip), to separate
-  augmentation from the rest of the recipe.
-* [`notebooks/kaggle_rescore.ipynb`](notebooks/kaggle_rescore.ipynb): test AP for small
-  (< 8 px), medium and large numbers, from the saved checkpoints of the runs above.
+**Less data.** Nested subsets of the training images, same number of training steps
+(test AP50:95; † two seeds, otherwise three):
+
+| Model (256 px) | 10% (317 images) | 25% (792) | 100% (3,165) |
+|---|---|---|---|
+| JerseyNet, from scratch | 0.124 ± 0.011 | 0.183 ± 0.001 † | 0.241 ± 0.006 |
+| YOLOv8n, from scratch | 0.265 ± 0.013 | 0.305 ± 0.012 † | 0.352 ± 0.013 |
+| YOLOv8n, COCO | 0.302 ± 0.011 † | 0.349 ± 0.006 † | 0.384 ± 0.003 |
+| COCO minus scratch | 0.037 | 0.044 | 0.032 |
+
+COCO pretraining stays worth about 0.04 AP even with 317 images. JerseyNet keeps only half its
+accuracy at 10% (YOLOv8n from scratch keeps three-quarters), which fits heavy augmentation acting
+as extra data.
+
+**Number size** (test AP50:95; small < 8 px, medium 8-16 px, large > 16 px at 128 px):
+
+| Model | Small | Medium | Large |
+|---|---|---|---|
+| JerseyNet, 256 px | 0.043 ± 0.011 | 0.320 ± 0.018 | 0.463 ± 0.009 |
+| JerseyNet + mosaic + GIoU, 384 px | 0.101 ± 0.012 | 0.408 ± 0.011 | 0.529 ± 0.005 |
+| YOLOv8n, from scratch, 256 px | 0.087 ± 0.019 | 0.453 ± 0.015 | 0.609 ± 0.018 |
+| YOLOv8n, from scratch, 384 px | 0.103 ± 0.007 | 0.491 ± 0.019 | 0.590 ± 0.019 |
+| YOLOv8n, COCO, 256 px | 0.101 ± 0.012 | 0.485 ± 0.008 | 0.678 ± 0.008 |
+| YOLOv8n, COCO, 640 px | 0.123 ± 0.009 | 0.542 ± 0.026 | 0.670 ± 0.021 |
+
+Small numbers are hard for every model. At 384 px JerseyNet matches YOLOv8n on them; the remaining
+gap is on medium and large numbers. COCO pretraining helps mostly on large numbers.
+
+Archives: [`2026-11-04_kaggle_t4_rescore/`](docs/experiments/2026-11-04_kaggle_t4_rescore/)
+(AP by size from the saved checkpoints, [`notebooks/kaggle_rescore.ipynb`](notebooks/kaggle_rescore.ipynb))
+and [`2026-11-07_kaggle_t4_study/`](docs/experiments/2026-11-07_kaggle_t4_study/)
+(data efficiency and augmentation, [`notebooks/kaggle_study.ipynb`](notebooks/kaggle_study.ipynb)).
+
+## Paper
+
+The preprint is in [`paper/`](paper/) (`main.tex`, `refs.bib`, figures built by
+`python paper/make_figure.py` from the archived results). Build with `latexmk -pdf main.tex`.
 
 ## Dataset
 
@@ -233,9 +264,8 @@ src/jersey_detect/
 configs/          training and pipeline settings
 notebooks/        Kaggle notebooks
 legacy/           2025 coursework notebook and slides
-docs/paper/       paper draft
+paper/            preprint (LaTeX) and figure script
 docs/experiments/ archived results of every Kaggle run
-paper/            LaTeX source of the paper
 tests/            pytest suite
 ```
 
