@@ -9,7 +9,7 @@ authors:
 version: 2.1.0
 date-released: 2026-11-07
 license: MIT
-doi: 10.5281/zenodo.23281896
+doi: 10.5281/zenodo.24040615
 repository-code: "https://github.com/MHKhan50/jersey-number-detection"
 keywords:
   - jersey number
@@ -17,3 +17,15 @@ keywords:
   - sports analytics
   - CenterNet
   - training from scratch
+preferred-citation:
+  type: article
+  title: "Localising jersey numbers without pretraining: how much of the gap to YOLOv8n is pretraining?"
+  authors:
+    - family-names: Hussain
+      given-names: Muzammal
+      orcid: "https://orcid.org/0009-0001-2570-5686"
+  year: 2026
+  publisher:
+    name: Zenodo
+  doi: 10.5281/zenodo.24040745
+  notes: Preprint

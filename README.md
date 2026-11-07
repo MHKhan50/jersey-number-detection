@@ -1,6 +1,8 @@
 # Jersey Number Localisation
 
 [![CI](https://github.com/MHKhan50/jersey-number-detection/actions/workflows/ci.yml/badge.svg)](https://github.com/MHKhan50/jersey-number-detection/actions/workflows/ci.yml)
+[![Preprint](https://img.shields.io/badge/preprint-10.5281%2Fzenodo.24040745-blue)](https://doi.org/10.5281/zenodo.24040745)
+[![Software](https://img.shields.io/badge/software-10.5281%2Fzenodo.24040615-blue)](https://doi.org/10.5281/zenodo.24040615)
 
 Find the jersey numbers in a sports image. The main model, **JerseyNet**, is an anchor-free
 detector in the style of CenterNet, trained from random initialisation (no ImageNet or COCO
@@ -126,7 +128,8 @@ and [`2026-11-07_kaggle_t4_study/`](docs/experiments/2026-11-07_kaggle_t4_study/
 
 ## Paper
 
-The preprint is in [`paper/`](paper/) (`main.tex`, `refs.bib`, figures built by
+Preprint on Zenodo: [doi:10.5281/zenodo.24040745](https://doi.org/10.5281/zenodo.24040745).
+The LaTeX source is in [`paper/`](paper/) (`main.tex`, `refs.bib`, figures built by
 `python paper/make_figure.py` from the archived results). Build with `latexmk -pdf main.tex`.
 
 ## Dataset
@@ -281,7 +284,22 @@ tests/            pytest suite
 
 ## Citation
 
-See [`CITATION.cff`](CITATION.cff).
+If you use the results, please cite the preprint:
+
+```bibtex
+@misc{hussain2026jersey,
+  author    = {Hussain, Muzammal},
+  title     = {Localising jersey numbers without pretraining: how much of the gap to {YOLOv8n} is pretraining?},
+  year      = {2026},
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.24040745},
+  note      = {Preprint}
+}
+```
+
+If you use the code, cite the software (version 2.1.0,
+[doi:10.5281/zenodo.24040615](https://doi.org/10.5281/zenodo.24040615)); see
+[`CITATION.cff`](CITATION.cff).
 
 ## Licence
 
