@@ -3,6 +3,7 @@
 [![CI](https://github.com/MHKhan50/jersey-number-detection/actions/workflows/ci.yml/badge.svg)](https://github.com/MHKhan50/jersey-number-detection/actions/workflows/ci.yml)
 [![Preprint](https://img.shields.io/badge/preprint-10.5281%2Fzenodo.24040745-blue)](https://doi.org/10.5281/zenodo.24040745)
 [![Software](https://img.shields.io/badge/software-10.5281%2Fzenodo.24040615-blue)](https://doi.org/10.5281/zenodo.24040615)
+[![Demo](https://img.shields.io/badge/demo-Hugging%20Face-yellow)](https://huggingface.co/spaces/MHkhan50/jersey-number-detection)
 
 Find the jersey numbers in a sports image. The main model, **JerseyNet**, is an anchor-free
 detector in the style of CenterNet, trained from random initialisation (no ImageNet or COCO
@@ -13,6 +14,8 @@ The project started as 2025 coursework (a TensorFlow notebook, kept in [`legacy/
 Version 1 ported that network to PyTorch. Version 2 replaces it with a real detector, because
 the v1 network regressed a single box from globally pooled features and barely beat a constant
 prediction (see [Results](#results)).
+
+**[Live demo on Hugging Face](https://huggingface.co/spaces/MHkhan50/jersey-number-detection)**: upload an image and JerseyNet draws a box around each jersey number. It runs entirely in the browser. Source in [`demo/`](demo/).
 
 ## Task
 
@@ -268,6 +271,7 @@ configs/          training and pipeline settings
 notebooks/        Kaggle notebooks
 legacy/           2025 coursework notebook and slides
 paper/            preprint (LaTeX) and figure script
+demo/             browser demo (ONNX Runtime Web) and ONNX export
 docs/experiments/ archived results of every Kaggle run
 tests/            pytest suite
 ```
