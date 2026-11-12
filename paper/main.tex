@@ -12,16 +12,20 @@
 \usepackage{microtype}
 \usepackage[numbers,sort&compress]{natbib}
 \usepackage{xcolor}
-\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xurl}
+\setlength{\emergencystretch}{2em}
+\hypersetup{pdftitle={Localising jersey numbers without pretraining: how much of the gap to YOLOv8n is pretraining?},pdfauthor={Muzammal Hussain}}
 
 \captionsetup{font=small,labelfont=bf}
 \newcommand{\pmv}[2]{#1\,$\pm$\,#2}
 
 \title{Localising jersey numbers without pretraining:\\how much of the gap to YOLOv8n is pretraining?}
-\author{Muzammal Hussain\\[2pt]
-  \small Independent researcher, Glasgow, United Kingdom\\
-  \small \href{mailto:muzammal@masmatixinnovations.co.uk}{\texttt{muzammal@masmatixinnovations.co.uk}}}
-\date{}
+\author{Muzammal Hussain\\
+\small Independent researcher, Glasgow, United Kingdom\\
+\small \href{mailto:muzammal@masmatixinnovations.co.uk}{muzammal@masmatixinnovations.co.uk}\\
+\small ORCID: \href{https://orcid.org/0009-0001-2570-5686}{0009-0001-2570-5686}}
+\date{\small Preprint, November 2026}
 
 \begin{document}
 \maketitle
@@ -197,7 +201,7 @@ fine-tuned from COCO at 640\,px. Table~\ref{tab:main} gives the full protocol.
 \caption{Test split (147 images, 234 boxes). Baselines are single runs with 95\% bootstrap
 intervals; detectors are mean $\pm$ standard deviation over three seeds.}
 \label{tab:main}
-\setlength{\tabcolsep}{4pt}
+\setlength{\tabcolsep}{2.5pt}
 \begin{tabular}{llcccccc}
 \toprule
 Model & Pretrained & Input & AP50:95 & AP50 & AP75 & AR@100 & First-box IoU \\
