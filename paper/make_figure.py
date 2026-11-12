@@ -18,7 +18,8 @@ OUT = Path(__file__).resolve().parent / "figures"
 
 plt.rcParams.update({"font.family": "serif", "font.size": 9, "axes.spines.top": False,
                      "axes.spines.right": False, "pdf.fonttype": 42})
-COLOURS = ["#1f4e79", "#c0504d", "#4f8a3c", "#7f6084"]
+# House palette: blue, yellow, red, light green
+COLOURS = ["#1F4E9C", "#E3A800", "#C8102E", "#5FA65A"]
 
 
 def val_curves() -> None:
