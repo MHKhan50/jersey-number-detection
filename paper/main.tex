@@ -101,8 +101,9 @@ either assume or obtain from pose estimation.
 
 \section{Data}
 
-We use the Roboflow export \texttt{jersey-2} (version 1, public domain), one class
-(\texttt{number}), YOLO format, also available as a Kaggle dataset.\footnote{\url{https://www.kaggle.com/datasets/muzammalhussain11/jersey-2}}
+We use the Roboflow export \texttt{jersey-2} (version 1), one class (\texttt{number}), YOLO format.
+Roboflow lists the export as public domain, but the underlying broadcast and press photographs may carry
+their own rights, so we use it for research only and do not redistribute the images.
 Table~\ref{tab:data} gives the split sizes.
 
 \begin{table}[h]
@@ -194,7 +195,7 @@ most 100 boxes per image, and are scored with the same evaluator as all other mo
 
 Under the v1 protocol (test split, 130 scored images), the earlier runs gave a mean IoU of 0.016
 for the mean box, 0.044 for the v1 regressor, and 0.581 (68.5\% with IoU $\geq 0.5$) for YOLOv8n
-fine-tuned from COCO at 640\,px. Table~\ref{tab:main} gives the full protocol.
+fine-tuned from COCO at 640\,px. Table~\ref{tab:main} gives the full protocol; an ablation of the v1 regressor is in Appendix~\ref{app:v1}.
 
 \begin{table*}[t]
 \centering\small
@@ -385,34 +386,6 @@ mosaic acts as extra training data, and its value is largest when real data are 
 
 
 
-\section{Analysis of the v1 regressor}
-
-Table~\ref{tab:v1} ablates the v1 regressor (test split, run before the box-ordering fix).
-
-\begin{table}[t]
-\centering\small
-\caption{v1 regressor variants, test split.}
-\label{tab:v1}
-\begin{tabular}{llrlcc}
-\toprule
-Variant & Box loss & Epochs & Checkpoint & Box MSE & Mean IoU \\
-\midrule
-A. Default            & MSE  & 15 & val.\ loss & 0.031 & 0.044 \\
-B. Longer training    & MSE  & 50 & val.\ loss & 0.034 & 0.039 \\
-C. GIoU box loss      & GIoU & 15 & val.\ loss & 0.170 & 0.000 \\
-D. GIoU, IoU selection& GIoU & 50 & val.\ IoU  & 0.280 & 0.000 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Longer training does not help, and neither loss moves the regressor beyond the baseline range. The
-design is the likely limit: global average pooling discards where features occur, the model can
-output only one box although images hold up to nine numbers, and the $128\times128$ input leaves
-the smallest numbers about four pixels wide. JerseyNet addresses each of these with a spatial
-heatmap, any number of outputs, and stride-4 features on a $2\times$ upsampled input; with the same
-data and budget it gives a ten-fold higher first-box IoU. The GIoU collapse is reported as a
-negative result with an open diagnosis; the v1 code is preserved in the version 1.0.0 archive.
-
 \section{Limitations}
 
 \begin{itemize}
@@ -448,12 +421,46 @@ split; testing them on other sports and on higher-resolution images is the obvio
 
 Code, configurations, Kaggle notebooks and the archived summaries of every run reported here are
 at \url{https://github.com/MHKhan50/jersey-number-detection} (version 2.1.0, archived on Zenodo,
-\href{https://doi.org/10.5281/zenodo.23281896}{doi:10.5281/zenodo.23281896}). A browser demo of JerseyNet that runs entirely on the user's device is at \url{https://huggingface.co/spaces/MHkhan50/jersey-number-detection}. The main run is
+\href{https://doi.org/10.5281/zenodo.24040615}{doi:10.5281/zenodo.24040615}). A browser demo of JerseyNet that runs entirely on the user's device is at \url{https://huggingface.co/spaces/MHkhan50/jersey-number-detection}. The main run is
 reproduced with
 \begin{center}
 \texttt{jersey-detect run --data /data/jersey-2 --out results --config configs/kaggle.json}
 \end{center}
 which records the environment and the exact commit with the results.
+
+\appendix
+\section{Ablation of the v1 regressor}\label{app:v1}
+
+Table~\ref{tab:v1} ablates the v1 regressor on the test split. These runs predate a fix to box ordering: the
+sigmoid head can output a minimum coordinate above the maximum, which gives a zero-area box and an IoU of 0 even
+when the box sits on the right number, and GIoU training does not penalise the swap. The current code orders the
+coordinates before the loss and before scoring.
+
+\begin{table}[t]
+\centering\small
+\caption{v1 regressor variants, test split.}
+\label{tab:v1}
+\begin{tabular}{llrlcc}
+\toprule
+Variant & Box loss & Epochs & Checkpoint & Box MSE & Mean IoU \\
+\midrule
+A. Default            & MSE  & 15 & val.\ loss & 0.031 & 0.044 \\
+B. Longer training    & MSE  & 50 & val.\ loss & 0.034 & 0.039 \\
+C. GIoU box loss      & GIoU & 15 & val.\ loss & 0.170 & 0.000 \\
+D. GIoU, IoU selection& GIoU & 50 & val.\ IoU  & 0.280 & 0.000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Longer training does not help, and neither loss moves the regressor beyond the baseline range. The
+design is the likely limit: global average pooling discards where features occur, the model can
+output only one box although images hold up to nine numbers, and the $128\times128$ input leaves
+the smallest numbers about four pixels wide. JerseyNet addresses each of these with a spatial
+heatmap, any number of outputs, and stride-4 features on a $2\times$ upsampled input; with the same
+data and budget it gives a ten-fold higher first-box IoU. The zero IoU of the GIoU variants (C and D) is
+consistent with the ordering problem, but they were not re-run after the fix; the v1 code is preserved in the
+version 1.0.0 archive.
+
 
 \bibliographystyle{plainnat}
 \bibliography{refs}
