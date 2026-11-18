@@ -10,7 +10,8 @@ from jersey_detect.yolo_baseline import SETTINGS, write_data_yaml
 
 def test_settings_cover_pretraining_and_resolution():
     assert {(s.weights, s.imgsz) for s in SETTINGS} == {
-        ("yolov8n.pt", 640), ("yolov8n.pt", 256), ("yolov8n.yaml", 256), ("yolov8n.yaml", 384)}
+        ("yolov8n.pt", 640), ("yolov8n.pt", 256), ("yolov8n.yaml", 256), ("yolov8n.yaml", 384),
+        ("yolo11n.pt", 640), ("yolo11n.yaml", 384)}
     assert len({s.slug for s in SETTINGS}) == len(SETTINGS)
 
 

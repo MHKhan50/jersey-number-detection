@@ -49,7 +49,7 @@ JERSEYNET_AUGMENTATION = (("mosaic", 0.0), ("close_mosaic", 0), ("mixup", 0.0), 
 @dataclass(frozen=True)
 class YoloSetting:
     name: str
-    weights: str  # "yolov8n.pt" (COCO-pretrained) or "yolov8n.yaml" (random initialisation)
+    weights: str  # "*.pt" (COCO-pretrained) or "*.yaml" (random initialisation)
     imgsz: int
     epochs: int
     extra: tuple = ()  # further Ultralytics training arguments as (key, value) pairs
@@ -66,6 +66,9 @@ SETTINGS = (
     YoloSetting("YOLOv8n, from scratch, 384 px", "yolov8n.yaml", 384, 140),
     YoloSetting("YOLOv8n, from scratch, 256 px, JerseyNet augmentation", "yolov8n.yaml", 256, 140,
                 JERSEYNET_AUGMENTATION),
+    # YOLO11n (Ultralytics >= 8.3): the current nano model, same recipes as the YOLOv8n rows above.
+    YoloSetting("YOLO11n, COCO-pretrained, 640 px", "yolo11n.pt", 640, 50),
+    YoloSetting("YOLO11n, from scratch, 384 px", "yolo11n.yaml", 384, 140),
 )
 
 
