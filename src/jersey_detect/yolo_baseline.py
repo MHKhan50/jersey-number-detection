@@ -1,4 +1,4 @@
-"""YOLOv8n baselines, scored with exactly the same evaluator as JerseyNet.
+"""YOLOv8n and YOLO11n baselines, scored with exactly the same evaluator as JerseyNet.
 
 Three settings separate the two things a pretrained detector brings:
 
@@ -138,7 +138,7 @@ def _score(records, dets, scores, n_boot: int) -> dict:
 
 
 def _table(summary: dict) -> str:
-    rows = ["# YOLOv8n baselines", "",
+    rows = ["# YOLO baselines", "",
             "Same evaluator as JerseyNet. Test intervals are 95% bootstrap intervals over images.", "",
             "| Model | Split | AP50:95 | AP50 | AP75 | AR@100 | First-box mean IoU | First-box IoU ≥ 0.5 |",
             "|---|---|---|---|---|---|---|---|"]

@@ -38,6 +38,8 @@ is the mean ± standard deviation over three seeds (0, 1, 2), trained on a Kaggl
 | YOLOv8n | no | 384 | 0.366 ± 0.005 | 0.649 ± 0.003 | 0.371 ± 0.003 | 0.554 ± 0.016 | 33 min |
 | YOLOv8n | COCO | 256 | 0.384 ± 0.003 | 0.675 ± 0.004 | 0.394 ± 0.017 | 0.576 ± 0.016 | 12 min |
 | YOLOv8n | COCO | 640 | 0.419 ± 0.012 | 0.701 ± 0.008 | 0.476 ± 0.034 | 0.590 ± 0.007 | 22 min |
+| YOLO11n | no | 384 | 0.380 ± 0.020 | 0.651 ± 0.021 | 0.408 ± 0.027 | 0.566 ± 0.008 | 45 min |
+| YOLO11n | COCO | 640 | 0.413 ± 0.012 | 0.696 ± 0.021 | 0.453 ± 0.011 | 0.586 ± 0.020 | 22 min |
 
 Per-seed tables with 95% bootstrap intervals are in
 [`docs/experiments/2026-11-01_kaggle_t4/`](docs/experiments/2026-11-01_kaggle_t4/) (JerseyNet and
@@ -47,7 +49,10 @@ baselines, commit `8a40029`) and
 [`docs/experiments/2026-11-01_kaggle_t4_ablation/`](docs/experiments/2026-11-01_kaggle_t4_ablation/)
 (ablation, [`notebooks/kaggle_ablation.ipynb`](notebooks/kaggle_ablation.ipynb)) and
 [`docs/experiments/2026-11-02_kaggle_t4_yolo384/`](docs/experiments/2026-11-02_kaggle_t4_yolo384/)
-(YOLOv8n from scratch at 384 px).
+(YOLOv8n from scratch at 384 px) and
+[`docs/experiments/2026-11-19_kaggle_t4_yolo11/`](docs/experiments/2026-11-19_kaggle_t4_yolo11/)
+(YOLO11n, Ultralytics 8.4.215). YOLO11n stays within the spread over seeds of YOLOv8n in both
+settings.
 JerseyNet training curves: [`paper/figures/val_ap_curves.pdf`](paper/figures/val_ap_curves.pdf).
 
 What the numbers say, read from the bottom row up (AP50:95):

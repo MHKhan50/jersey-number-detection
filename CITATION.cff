@@ -6,8 +6,8 @@ authors:
   - family-names: Hussain
     given-names: Muzammal
     orcid: "https://orcid.org/0009-0001-2570-5686"
-version: 2.1.0
-date-released: 2026-11-07
+version: 2.2.0
+date-released: 2026-11-19
 license: MIT
 doi: 10.5281/zenodo.24040615
 repository-code: "https://github.com/MHKhan50/jersey-number-detection"

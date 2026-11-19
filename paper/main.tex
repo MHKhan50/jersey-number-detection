@@ -46,8 +46,9 @@ of the gap. Mosaic, a GIoU loss and a 384\,px input raise JerseyNet to \pmv{0.30
 the gap to a from-scratch YOLOv8n at the same input size (\pmv{0.366}{0.005}); at that size both
 detectors have the same AP on the smallest numbers. With 10\% and 25\% of the training images,
 COCO pretraining still adds only 0.04 AP, while JerseyNet loses half its accuracy at 10\%, against
-a quarter for YOLOv8n. On this task the gap to a modern detector is mainly a recipe gap, and above
-all an augmentation gap, rather than a pretraining gap.
+a quarter for YOLOv8n. The newer YOLO11n gives the same picture: \pmv{0.413}{0.012} from COCO
+weights at 640\,px and \pmv{0.380}{0.020} from scratch at 384\,px. On this task the gap to a modern
+detector is mainly a recipe gap, and above all an augmentation gap, rather than a pretraining gap.
 \end{abstract}
 
 \section{Introduction}
@@ -168,8 +169,12 @@ $10^{-3}$, batch 8, MSE on the first box, 15 epochs, weights after the last epoc
 Ultralytics YOLOv8n with its default training recipe, batch 16, seeds 0, 1 and 2, checkpoint
 chosen by Ultralytics on the validation split, in four settings: COCO-pretrained at 640 and
 256\,px for 50 epochs, and random initialisation (\texttt{yolov8n.yaml}) at 256 and 384\,px for
-140 epochs, the same as JerseyNet. Predictions use confidence threshold 0.001, NMS IoU 0.7 and at
-most 100 boxes per image, and are scored with the same evaluator as all other models.
+140 epochs, the same as JerseyNet. To check that the findings are not specific to one model
+generation, YOLO11n \citep{jocher2024yolo11} was trained with the same recipe in the two settings
+that bracket the comparison: COCO-pretrained at 640\,px for 50 epochs and random initialisation
+(\texttt{yolo11n.yaml}) at 384\,px for 140 epochs (Ultralytics 8.4.215). Predictions use
+confidence threshold 0.001, NMS IoU 0.7 and at most 100 boxes per image, and are scored with the
+same evaluator as all other models.
 
 \section{Evaluation protocol}
 
@@ -215,6 +220,9 @@ YOLOv8n       & no   & 256 & \pmv{0.352}{0.013} & \pmv{0.629}{0.019} & \pmv{0.37
 YOLOv8n       & no   & 384 & \pmv{0.366}{0.005} & \pmv{0.649}{0.003} & \pmv{0.371}{0.003} & \pmv{0.488}{0.006} & \pmv{0.554}{0.016} \\
 YOLOv8n       & COCO & 256 & \pmv{0.384}{0.003} & \pmv{0.675}{0.004} & \pmv{0.394}{0.017} & \pmv{0.489}{0.004} & \pmv{0.576}{0.016} \\
 YOLOv8n       & COCO & 640 & \pmv{0.419}{0.012} & \pmv{0.701}{0.008} & \pmv{0.476}{0.034} & \pmv{0.538}{0.012} & \pmv{0.590}{0.007} \\
+\midrule
+YOLO11n       & no   & 384 & \pmv{0.380}{0.020} & \pmv{0.651}{0.021} & \pmv{0.408}{0.027} & \pmv{0.506}{0.014} & \pmv{0.566}{0.008} \\
+YOLO11n       & COCO & 640 & \pmv{0.413}{0.012} & \pmv{0.696}{0.021} & \pmv{0.453}{0.011} & \pmv{0.550}{0.009} & \pmv{0.586}{0.020} \\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -230,12 +238,21 @@ Pretraining is therefore a small part of the gap on this task; a from-scratch YO
 of the pretrained model's accuracy. Sections~\ref{sec:augmatched} to~\ref{sec:data} break the 0.111 down
 further.
 
+\paragraph{A newer detector.} YOLO11n does not change this reading. From COCO weights at
+640\,px it reaches \pmv{0.413}{0.012} AP50:95, against \pmv{0.419}{0.012} for YOLOv8n; from
+scratch at 384\,px it reaches \pmv{0.380}{0.020}, against \pmv{0.366}{0.005}. Both differences
+are within the spread over seeds. For YOLO11n, COCO pretraining together with the larger input is
+worth 0.033 AP50:95 over training from scratch at 384\,px (0.053 for YOLOv8n), so again a model
+trained only on the task images recovers most of the pretrained accuracy. Per-seed test AP50:95 is
+0.400, 0.422 and 0.418 from COCO weights and 0.357, 0.394 and 0.389 from scratch.
+
 JerseyNet's per-seed test AP50:95 is 0.234, 0.246 and 0.242 (validation 0.247, 0.262, 0.262).
 Each seed ran 140 epochs in about 22 minutes on one T4 GPU. Validation AP50:95 reaches about 0.23
 by epoch 25 and changes little after epoch 90 (Figure~\ref{fig:curves}); the selected checkpoints
 come from epochs 115, 95 and 90. Training cost per seed for YOLOv8n is 34 minutes from scratch
 (256\,px, 140 epochs), 33 minutes from scratch at 384\,px, and 12 and 22 minutes from COCO
-weights at 256 and 640\,px (50 epochs).
+weights at 256 and 640\,px (50 epochs). YOLO11n takes 45 minutes per seed from scratch at
+384\,px and 22 minutes from COCO weights at 640\,px.
 
 \begin{figure}[t]
 \centering

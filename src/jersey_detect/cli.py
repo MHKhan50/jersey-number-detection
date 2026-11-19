@@ -82,7 +82,7 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("stats", help="dataset statistics and cross-split duplicate check")
     p.add_argument("--data", required=True)
 
-    p = sub.add_parser("yolo", help="YOLOv8n baselines scored with the same evaluator")
+    p = sub.add_parser("yolo", help="YOLOv8n and YOLO11n baselines scored with the same evaluator")
     p.add_argument("--data", required=True)
     p.add_argument("--out", required=True)
     p.add_argument("--hours", type=float, default=9.5, help="stop starting new runs after this")

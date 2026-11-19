@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.2.0 (2026-11-19)
+
+- YOLO11n baselines (COCO-pretrained at 640 px, from scratch at 384 px, three seeds) with the same
+  recipe and evaluator as YOLOv8n; results in `docs/experiments/2026-11-19_kaggle_t4_yolo11/`,
+  the README and the paper (main results table).
+- `notebooks/kaggle_yolo_baseline.ipynb` kept without outputs in the repository.
+
 ## 2.1.0 (2026-11-07)
 
 - AP by number size (small < 8 px, medium 8-16 px, large > 16 px at the original 128 px),
