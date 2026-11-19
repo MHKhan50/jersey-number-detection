@@ -298,7 +298,7 @@ If you use the results, please cite the preprint:
 ```bibtex
 @misc{hussain2026jersey,
   author    = {Hussain, Muzammal},
-  title     = {Localising jersey numbers without pretraining: how much of the gap to {YOLOv8n} is pretraining?},
+  title     = {Localising Jersey Numbers without Pretraining: How Much of the Gap to {YOLOv8n} Is Pretraining?},
   year      = {2026},
   publisher = {Zenodo},
   doi       = {10.5281/zenodo.24040745},

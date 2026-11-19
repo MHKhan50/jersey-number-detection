@@ -19,7 +19,7 @@ keywords:
   - training from scratch
 preferred-citation:
   type: article
-  title: "Localising jersey numbers without pretraining: how much of the gap to YOLOv8n is pretraining?"
+  title: "Localising Jersey Numbers without Pretraining: How Much of the Gap to YOLOv8n Is Pretraining?"
   authors:
     - family-names: Hussain
       given-names: Muzammal
