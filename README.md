@@ -306,6 +306,8 @@ If you use the results, please cite the preprint:
 }
 ```
 
+Software (code, notebooks, results): [doi:10.5281/zenodo.24040615](https://doi.org/10.5281/zenodo.24040615).
+
 If you use the code, cite the software (version 2.1.0,
 [doi:10.5281/zenodo.24040615](https://doi.org/10.5281/zenodo.24040615)); see
 [`CITATION.cff`](CITATION.cff).
